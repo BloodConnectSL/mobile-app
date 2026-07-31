@@ -1,0 +1,13 @@
+# Change made by: Nipuna Lakruwan
+# Date: 2026-08-01
+# Added: Dependabot configuration for Flutter and Actions
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
