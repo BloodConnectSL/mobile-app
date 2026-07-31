@@ -1,10 +1,14 @@
 # Change made by: Nipuna Lakruwan
 # Date: 2026-08-01
-# Added: Auto-assign Pull Requests
+# Added: Auto-assign Pull Requests (Fixed permissions and config)
 name: Auto Assign
 on:
   pull_request:
     types: [opened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  issues: write
 
 jobs:
   assign:
@@ -13,4 +17,3 @@ jobs:
       - uses: kentaro-m/auto-assign-action@v2.0.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          assignees: Nipuna-Lakruwan
