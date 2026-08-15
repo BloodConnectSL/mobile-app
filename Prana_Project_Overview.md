@@ -1,10 +1,10 @@
-# **BloodConnectSL: Project overview**
+# **Prana (ප්‍රාණ): Project overview**
 
 *Read this first to get a full picture in one place. Written for everyone on the team.*
 
 ## **1\. What we're building**
 
-**BloodConnectSL** is a mobile app that makes it easier for people in Sri Lanka to find and join blood donation events near them, and for the organizations running those events (hospitals, Leo/Lions clubs, schools, churches, NGOs) to manage donors and track who's actually shown up and donated.
+**Prana (ප්‍රාණ)** is a mobile app that makes it easier for people in Sri Lanka to find and join blood donation events near them, and for the organizations running those events (hospitals, Leo/Lions clubs, schools, churches, NGOs) to manage donors and track who's actually shown up and donated.
 
 ### **The problem**
 
@@ -12,7 +12,7 @@ Most blood donation camps in Sri Lanka are organized by community groups, not by
 
 ### **Our solution**
 
-BloodConnectSL sits in that gap: one app where a donor creates a profile once, sees nearby events from *any* organizer or hospital on a map, RSVPs, donates, and gets verified credit for it, building a donation history that follows them across every organization they donate with.
+Prana (ප්‍රාණ) sits in that gap: one app where a donor creates a profile once, sees nearby events from *any* organizer or hospital on a map, RSVPs, donates, and gets verified credit for it, building a donation history that follows them across every organization they donate with.
 
 **Important:** we are not affiliated with, and must never present ourselves as, the NBTS or Raktha. We're a separate, non-profit community tool.
 
@@ -62,11 +62,11 @@ BloodConnectSL sits in that gap: one app where a donor creates a profile once, s
 
 ## **7\. Non-profit commitment**
 
-BloodConnectSL will always be free, with no charging donors or organizations, no selling donor data, and no one person owning or profiting from it individually. This was agreed by the whole founding team from day one.
+Prana (ප්‍රාණ) will always be free, with no charging donors or organizations, no selling donor data, and no one person owning or profiting from it individually. This was agreed by the whole founding team from day one.
 
 ## **8\. Where everything lives**
 
 * **Project specification**: the full technical detail: roles, data flow, diagrams, deliverables list, timeline  
-* **GitHub repos**: `mobile-app` and `web-dashboard`, both private, both under the BloodConnectSL organization
+* **GitHub repos**: `mobile-app` and `web-dashboard`, both private, both under the Prana (ප්‍රාණ) organization
 
 If anything in this document doesn't match what you understood the project to be, flag it to the leads before you start building against it; better to catch a mismatch now than after a few weeks of work.
