@@ -4,7 +4,7 @@ Date: 2026-08-01
 Added: Created this file to set explicit rules for branching, PRs, and code reviews, ensuring nobody commits directly to main.
 -->
 
-# Contributing to BloodConnectSL Mobile App
+# Contributing to Prana (ප්‍රාණ) Mobile App
 
 To ensure code quality and a clear history of contributions, we have strict rules regarding how changes are made to the codebase. 
 
