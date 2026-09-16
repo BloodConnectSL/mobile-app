@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,6 +16,8 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _controller;
   late final Animation<double> _markScale;
   late final Animation<double> _contentOpacity;
+
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -29,10 +34,16 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _controller,
       curve: const Interval(0.3, 1, curve: Curves.easeOut),
     );
+
+    _navigationTimer = Timer(const Duration(milliseconds: 2200), () {
+      if (!mounted) return;
+      context.go('/login');
+    });
   }
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
