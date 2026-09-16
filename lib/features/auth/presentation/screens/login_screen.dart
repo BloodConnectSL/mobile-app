@@ -187,7 +187,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         textStyle: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
-                    const Spacer(),
                     const SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
