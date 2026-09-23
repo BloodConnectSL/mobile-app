@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:prana/features/splash/presentation/screens/splash_screen.dart';
 import 'package:prana/features/auth/presentation/screens/login_screen.dart';
 import 'package:prana/features/auth/presentation/screens/signup_screen.dart';
+import 'package:prana/views/push_notifications_view.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -26,6 +27,11 @@ final GoRouter appRouter = GoRouter(
       path: '/signup',
       name: 'signup',
       builder: (context, state) => const SignupScreen(),
+    ),
+    GoRoute(
+      path: '/notifications',
+      name: 'notifications',
+      builder: (context, state) => const PushNotificationsView(),
     ),
   ],
 );
