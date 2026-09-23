@@ -1,10 +1,5 @@
-/*
-Change made by: Nipuna Lakruwan
-Date: 2026-08-15
-Added: Placeholder Signup Screen component.
-How: Created this blank file as a target for the GoRouter '/signup' route.
-*/
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -12,9 +7,29 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      backgroundColor: const Color(0xFFFFFBFC),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          tooltip: 'Back',
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+      ),
       body: const Center(
-        child: Text('Sign Up Screen (Placeholder)'),
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'Create your donor account',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF252022),
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
       ),
     );
   }
