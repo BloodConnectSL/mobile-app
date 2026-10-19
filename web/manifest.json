@@ -1,6 +1,6 @@
 {
-    "name": "blood_connect",
-    "short_name": "blood_connect",
+    "name": "blood_connect_sl",
+    "short_name": "blood_connect_sl",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

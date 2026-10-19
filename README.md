@@ -1,24 +1,16 @@
-<!-- 
-Change made by: Nipuna Lakruwan
-Date: 2026-08-01
-Modified: Added a link to the newly converted Prana (ප්‍රාණ)_Project_Development_Research.md file in the Project Overview section.
--->
+# blood_connect_sl
 
-# Prana (ප්‍රාණ) Mobile App
+A new Flutter project.
 
-**Prana (ප්‍රාණ)** is a mobile app that makes it easier for people in Sri Lanka to find and join blood donation events near them, and for the organizations running those events to manage donors and track who has donated.
+## Getting Started
 
-## 🛠 Tech Stack
-- **Frontend**: [Flutter](https://flutter.dev/) (This repository)
-- **Backend**: Go
-- **Database**: Supabase
+This project is a starting point for a Flutter application.
 
-## 📖 Project Overview
-For full details on the project architecture, roles, and features, please read the [Prana (ප්‍රාණ): Project overview](Prana (ප්‍රාණ)_%20Project%20overview.md) document. 
+A few resources to get you started if this is your first Flutter project:
 
-Additionally, an extensive architectural and research analysis detailing our database structure (PostGIS, RLS), authentication mechanisms (Casbin RBAC), and data privacy compliance (Sri Lanka PDPA) is available in our [Project Development Research Document](Prana (ප්‍රාණ)_Project_Development_Research.md).
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-## 🤝 Contributing
-We have strict guidelines on how to contribute to this repository. Please read the [Contributing Guidelines](CONTRIBUTING.md) before making any changes. 
-
-**TL;DR: No direct commits to `main`. Create a branch, open a PR, and get it reviewed by Nipuna or Vimukthi.**
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
