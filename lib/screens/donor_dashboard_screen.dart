@@ -55,6 +55,7 @@ class DonorDashboardScreen extends StatelessWidget {
         : username;
     final phone = userData['phone'] ?? '';
     final qrRef = userData['qr_ref'] ?? 'REF-DONOR';
+    final isVerified = userData['is_verified'] == true;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -75,6 +76,46 @@ class DonorDashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Pending Verification Banner
+              if (!isVerified) ...[
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFDE68A), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          color: Color(0xFFD97706), size: 22),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Please wait while your account to be verified (Donate first time through a camp to be verified)',
+                          style: TextStyle(
+                            color: Color(0xFF92400E),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               // User Greeting & Role Banner
               Container(
                 width: double.infinity,
@@ -143,7 +184,7 @@ class DonorDashboardScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  '@$username • Verified Donor',
+                                  '@$username • ${isVerified ? "Verified Donor" : "Pending Verification"}',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 11,

@@ -225,8 +225,8 @@ class _DonorOnboardingWizardScreenState
 
       if (!mounted) return;
 
-      // Update user session map
-      widget.userData['is_verified'] = true;
+      // Update user session map: profile_completed is now true, while is_verified remains false pending admin / camp verification
+      widget.userData['is_verified'] = false;
       widget.userData['profile_completed'] = true;
       widget.userData['blood_type_id'] = _selectedBloodTypeId;
 

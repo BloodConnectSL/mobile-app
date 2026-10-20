@@ -65,10 +65,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      final isVerified = data['is_verified'] == true;
+      final profileCompleted = data['profile_completed'] == true;
 
-      // If the donor is logging in for the first time (not verified), direct to onboarding wizard
-      if ((rawRole == 'DONOR' || rawRole.isEmpty) && !isVerified) {
+      // If the donor has not completed their profile, direct to onboarding wizard
+      if ((rawRole == 'DONOR' || rawRole.isEmpty) && !profileCompleted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => DonorOnboardingWizardScreen(userData: data),
