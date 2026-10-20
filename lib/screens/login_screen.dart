@@ -12,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -39,11 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     try {
-      final phone = _phoneController.text.trim();
+      final username = _usernameController.text.trim();
       final password = _passwordController.text;
 
       final data = await ApiService.login(
-        phone: phone,
+        username: username,
         password: password,
       );
 
@@ -290,18 +290,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                 ],
 
-                // Identifier (Phone or Username) Input Field
+                // Username Input Field
                 TextFormField(
-                  controller: _phoneController,
+                  controller: _usernameController,
                   keyboardType: TextInputType.text,
                   decoration: const InputDecoration(
-                    labelText: 'Phone Number or Username',
-                    hintText: '+94771234567 or username',
+                    labelText: 'Username',
+                    hintText: 'Enter your username',
                     prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryCrimson),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your phone number or username';
+                      return 'Please enter your username';
                     }
                     if (value.trim().length < 3) {
                       return 'Must be at least 3 characters';

@@ -52,6 +52,12 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
   bool _isSubmitting = false;
   String? _submissionError;
 
+  // Username validation state
+  bool _isCheckingUsername = false;
+  bool? _isUsernameAvailable;
+  String? _usernameStatusMessage;
+  Timer? _usernameDebounceTimer;
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -71,7 +77,54 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
       f.dispose();
     }
     _countdownTimer?.cancel();
+    _usernameDebounceTimer?.cancel();
     super.dispose();
+  }
+
+  void _onUsernameChanged(String value) {
+    _usernameDebounceTimer?.cancel();
+    final trimmed = value.trim();
+
+    if (trimmed.length < 3) {
+      setState(() {
+        _isCheckingUsername = false;
+        _isUsernameAvailable = null;
+        _usernameStatusMessage = null;
+      });
+      return;
+    }
+
+    if (!RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(trimmed)) {
+      setState(() {
+        _isCheckingUsername = false;
+        _isUsernameAvailable = false;
+        _usernameStatusMessage = 'Only letters, numbers, dots, and underscores allowed';
+      });
+      return;
+    }
+
+    setState(() {
+      _isCheckingUsername = true;
+      _usernameStatusMessage = null;
+    });
+
+    _usernameDebounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      try {
+        final available = await ApiService.checkUsernameAvailability(trimmed);
+        if (!mounted) return;
+        setState(() {
+          _isCheckingUsername = false;
+          _isUsernameAvailable = available;
+          _usernameStatusMessage =
+              available ? 'Username is available' : 'Username is already taken';
+        });
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _isCheckingUsername = false;
+        });
+      }
+    });
   }
 
   // --- Normalizes and validates phone ---
@@ -282,6 +335,17 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please verify your phone number via OTP first'),
+          backgroundColor: AppTheme.errorRed,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (_isUsernameAvailable == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('The chosen username is already taken. Please choose another.'),
           backgroundColor: AppTheme.errorRed,
           behavior: SnackBarBehavior.floating,
         ),
@@ -542,11 +606,41 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                     TextFormField(
                       controller: _usernameController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
+                      onChanged: _onUsernameChanged,
+                      decoration: InputDecoration(
                         labelText: 'Username *',
                         hintText: 'Choose a unique username (e.g. kamal_p)',
-                        prefixIcon: Icon(Icons.account_circle_outlined,
+                        prefixIcon: const Icon(Icons.account_circle_outlined,
                             color: AppTheme.primaryCrimson),
+                        suffixIcon: _isCheckingUsername
+                            ? const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppTheme.primaryCrimson,
+                                  ),
+                                ),
+                              )
+                            : _isUsernameAvailable == true
+                                ? const Icon(Icons.check_circle,
+                                    color: AppTheme.successGreen)
+                                : _isUsernameAvailable == false
+                                    ? const Icon(Icons.cancel,
+                                        color: AppTheme.errorRed)
+                                    : null,
+                        helperText: _usernameStatusMessage,
+                        helperStyle: TextStyle(
+                          color: _isUsernameAvailable == true
+                              ? AppTheme.successGreen
+                              : _isUsernameAvailable == false
+                                  ? AppTheme.errorRed
+                                  : AppTheme.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
@@ -557,6 +651,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                         }
                         if (!RegExp(r'^[a-zA-Z0-9._]+$').hasMatch(v.trim())) {
                           return 'Only letters, numbers, dots, and underscores allowed';
+                        }
+                        if (_isUsernameAvailable == false) {
+                          return 'Username is already taken';
                         }
                         return null;
                       },

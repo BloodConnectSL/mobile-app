@@ -11,8 +11,9 @@ String getDefaultBaseUrl() {
   }
   try {
     if (Platform.isAndroid) {
-      return 'http://localhost:8080';
+      // return 'http://localhost:8080';
       //  return 'http://10.0.2.2:8080';
+      return 'http://10.15.99.69:8080';
     }
   } catch (_) {
     // Platform checking not supported on some platforms
@@ -181,12 +182,12 @@ class ApiService {
   /// 4. User Login
   /// POST /api/v1/auth/login
   static Future<Map<String, dynamic>> login({
-    required String phone,
+    required String username,
     required String password,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/auth/login');
     final payload = jsonEncode({
-      'phone': phone,
+      'username': username,
       'password': password,
     });
 
@@ -202,6 +203,30 @@ class ApiService {
       throw ApiException(
         statusCode: 0,
         message: 'Network error: Unable to connect to server at $baseUrl',
+      );
+    }
+  }
+
+  /// 5. Check Username Availability
+  /// GET /api/v1/auth/check-username?username=...
+  static Future<bool> checkUsernameAvailability(String username) async {
+    final trimmed = username.trim();
+    if (trimmed.isEmpty) return false;
+    final uri = Uri.parse(
+        '$baseUrl/api/v1/auth/check-username?username=${Uri.encodeComponent(trimmed)}');
+
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data['available'] == true;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to check username availability',
       );
     }
   }
