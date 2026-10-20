@@ -4,8 +4,10 @@ import '../theme/app_theme.dart';
 import 'donor_registration_screen.dart';
 import 'donor_dashboard_screen.dart';
 import 'org_admin_dashboard_screen.dart';
+import 'org_staff_dashboard_screen.dart';
 import 'system_admin_dashboard_screen.dart';
 import 'hospital_admin_dashboard_screen.dart';
+import 'hospital_staff_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -67,11 +69,17 @@ class _LoginScreenState extends State<LoginScreen> {
         case 'ORG_ADMIN':
           destination = OrgAdminDashboardScreen(userData: data);
           break;
+        case 'ORG_STAFF':
+          destination = OrgStaffDashboardScreen(userData: data);
+          break;
         case 'SYSTEM_ADMIN':
           destination = SystemAdminDashboardScreen(userData: data);
           break;
         case 'HOSPITAL_ADMIN':
           destination = HospitalAdminDashboardScreen(userData: data);
+          break;
+        case 'HOSPITAL_STAFF':
+          destination = HospitalStaffDashboardScreen(userData: data);
           break;
         case 'DONOR':
         default:
