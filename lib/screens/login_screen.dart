@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'donor_registration_screen.dart';
 import 'donor_dashboard_screen.dart';
+import 'donor_onboarding_wizard_screen.dart';
 import 'org_admin_dashboard_screen.dart';
 import 'org_staff_dashboard_screen.dart';
 import 'system_admin_dashboard_screen.dart';
@@ -63,6 +64,18 @@ class _LoginScreenState extends State<LoginScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      final isVerified = data['is_verified'] == true;
+
+      // If the donor is logging in for the first time (not verified), direct to onboarding wizard
+      if ((rawRole == 'DONOR' || rawRole.isEmpty) && !isVerified) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => DonorOnboardingWizardScreen(userData: data),
+          ),
+        );
+        return;
+      }
 
       Widget destination;
       switch (rawRole) {

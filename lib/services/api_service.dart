@@ -231,6 +231,73 @@ class ApiService {
     }
   }
 
+  /// 6. Get Blood Types Reference List
+  /// GET /api/v1/blood-types
+  static Future<List<Map<String, dynamic>>> getBloodTypes() async {
+    final uri = Uri.parse('$baseUrl/api/v1/blood-types');
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      final list = data['data'] as List<dynamic>? ?? [];
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load blood types from server',
+      );
+    }
+  }
+
+  /// 7. Complete Donor Profile Onboarding (first-time login wizard)
+  /// POST /api/v1/donors/complete-profile
+  static Future<Map<String, dynamic>> completeDonorOnboarding({
+    required String userId,
+    String? token,
+    required String bloodTypeId,
+    required String ethnicity,
+    required String country,
+    Map<String, dynamic>? location,
+    String? cityId,
+    String? districtId,
+    String? provinceId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/donors/complete-profile');
+    final headers = Map<String, String>.from(_defaultHeaders);
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final body = jsonEncode({
+      'user_id': userId,
+      'blood_type_id': bloodTypeId,
+      'ethnicity': ethnicity,
+      'country': country,
+      if (location != null) 'location': location,
+      if (cityId != null && cityId.isNotEmpty) 'city_id': cityId,
+      if (districtId != null && districtId.isNotEmpty) 'district_id': districtId,
+      if (provinceId != null && provinceId.isNotEmpty) 'province_id': provinceId,
+    });
+
+    try {
+      final response = await http
+          .post(uri, headers: headers, body: body)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data['data'] as Map<String, dynamic>? ?? data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Failed to submit onboarding details to server',
+      );
+    }
+  }
+
   /// Standard parser matching backend response envelopes
   static Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic> body;
