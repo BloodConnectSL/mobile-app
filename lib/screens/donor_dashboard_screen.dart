@@ -55,7 +55,18 @@ class DonorDashboardScreen extends StatelessWidget {
         : username;
     final phone = userData['phone'] ?? '';
     final qrRef = userData['qr_ref'] ?? 'REF-DONOR';
-    final isVerified = userData['is_verified'] == true;
+    bool isTruthy(dynamic val) {
+      if (val == null) return false;
+      if (val is bool) return val;
+      if (val is num) return val == 1;
+      if (val is String) {
+        final s = val.toLowerCase().trim();
+        return s == 'true' || s == '1' || s == 't' || s == 'yes';
+      }
+      return false;
+    }
+
+    final isVerified = isTruthy(userData['is_verified']);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),

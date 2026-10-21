@@ -65,9 +65,21 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      final profileCompleted = data['profile_completed'] == true;
+      bool isTruthy(dynamic val) {
+        if (val == null) return false;
+        if (val is bool) return val;
+        if (val is num) return val == 1;
+        if (val is String) {
+          final s = val.toLowerCase().trim();
+          return s == 'true' || s == '1' || s == 't' || s == 'yes';
+        }
+        return false;
+      }
 
-      // If the donor has not completed their profile, direct to onboarding wizard
+      // The onboarding wizard is shown ONLY when profile_completed is false.
+      // is_verified is strictly NOT used as the wizard display condition.
+      final profileCompleted = isTruthy(data['profile_completed']);
+
       if ((rawRole == 'DONOR' || rawRole.isEmpty) && !profileCompleted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
