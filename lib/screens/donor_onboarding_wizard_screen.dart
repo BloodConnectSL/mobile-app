@@ -209,7 +209,7 @@ class _DonorOnboardingWizardScreenState
         };
       }
 
-      await ApiService.completeDonorOnboarding(
+      final result = await ApiService.completeDonorOnboarding(
         userId: userId,
         token: token,
         bloodTypeId: _selectedBloodTypeId!,
@@ -229,6 +229,12 @@ class _DonorOnboardingWizardScreenState
       widget.userData['is_verified'] = false;
       widget.userData['profile_completed'] = true;
       widget.userData['blood_type_id'] = _selectedBloodTypeId;
+      if (result['qr_ref'] != null) {
+        widget.userData['qr_ref'] = result['qr_ref'];
+      }
+      if (result['qr_data'] != null) {
+        widget.userData['qr_data'] = result['qr_data'];
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

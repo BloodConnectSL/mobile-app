@@ -118,12 +118,34 @@ CREATE TABLE public.blood_donors (
   last_checked_eligibility timestamp with time zone,
   created_at timestamp with time zone,
   updated_at timestamp with time zone,
-  qr_ref_id text DEFAULT ('REF-'::text || upper(SUBSTRING(md5((random())::text) FROM 1 FOR 6))) UNIQUE,
+  qr_ref_id text DEFAULT ('bcnt'::text || lpad(nextval('public.donor_qr_ref_seq'::regclass)::text, 3, '0'::text)) UNIQUE,
+  qr_data text,
   CONSTRAINT blood_donors_pkey PRIMARY KEY (id),
   CONSTRAINT blood_donor_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT blood_donors_blood_type_id_fkey FOREIGN KEY (blood_type_id) REFERENCES public.blood_types(id),
   CONSTRAINT blood_donors_gender_id_fkey FOREIGN KEY (gender_id) REFERENCES public.genders(id)
 );
+
+CREATE SEQUENCE IF NOT EXISTS public.donor_qr_ref_seq START WITH 1;
+
+CREATE OR REPLACE FUNCTION public.sync_blood_donor_qr()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.qr_ref_id IS NULL OR NEW.qr_ref_id = '' THEN
+        NEW.qr_ref_id := 'bcnt' || lpad(nextval('public.donor_qr_ref_seq')::text, 3, '0');
+    END IF;
+    IF NEW.qr_data IS NULL OR NEW.qr_data = '' THEN
+        NEW.qr_data := NEW.qr_ref_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_sync_blood_donor_qr ON public.blood_donors;
+CREATE TRIGGER trg_sync_blood_donor_qr
+BEFORE INSERT OR UPDATE ON public.blood_donors
+FOR EACH ROW
+EXECUTE FUNCTION public.sync_blood_donor_qr();
 CREATE TABLE public.blood_types (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   abo_group character varying NOT NULL CHECK (abo_group::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'AB'::character varying, 'O'::character varying]::text[])),

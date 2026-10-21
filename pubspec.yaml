@@ -37,6 +37,7 @@ dependencies:
   http: ^1.6.0
   intl: ^0.20.3
   geolocator: ^14.1.2
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

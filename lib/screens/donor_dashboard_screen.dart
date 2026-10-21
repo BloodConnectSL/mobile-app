@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
 
@@ -54,7 +55,8 @@ class DonorDashboardScreen extends StatelessWidget {
         ? '$firstName $lastName'.trim()
         : username;
     final phone = userData['phone'] ?? '';
-    final qrRef = userData['qr_ref'] ?? 'REF-DONOR';
+    final qrRef = userData['qr_ref'] ?? userData['qr_ref_id'] ?? 'bcnt001';
+    final qrData = userData['qr_data'] ?? qrRef;
     bool isTruthy(dynamic val) {
       if (val == null) return false;
       if (val is bool) return val;
@@ -384,7 +386,7 @@ class DonorDashboardScreen extends StatelessWidget {
                     description: 'Fast check-in at hospitals',
                     color: const Color(0xFF4F46E5),
                     onTap: () {
-                      _showPassModal(context, qrRef, fullName);
+                      _showPassModal(context, qrRef, qrData, fullName);
                     },
                   ),
                   _buildActionCard(
@@ -569,55 +571,118 @@ class DonorDashboardScreen extends StatelessWidget {
     );
   }
 
-  void _showPassModal(BuildContext context, String qrRef, String fullName) {
+  void _showPassModal(
+      BuildContext context, String qrRef, String qrData, String fullName) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: 44,
+              height: 5,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Digital Donor Pass',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryCrimson.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.badge_rounded,
+                    color: AppTheme.primaryCrimson,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Digital Donor Pass',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               fullName,
-              style: const TextStyle(fontSize: 15, color: AppTheme.textSecondary),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textSecondary,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFCBD5E1)),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.qr_code_2_rounded,
-                      size: 110, color: AppTheme.primaryCrimson),
-                  const SizedBox(height: 10),
-                  Text(
-                    qrRef,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      color: AppTheme.textPrimary,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: QrImageView(
+                      data: qrData.isNotEmpty ? qrData : qrRef,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                      gapless: true,
+                      eyeStyle: const QrEyeStyle(
+                        eyeShape: QrEyeShape.square,
+                        color: Color(0xFF1E293B),
+                      ),
+                      dataModuleStyle: const QrDataModuleStyle(
+                        dataModuleShape: QrDataModuleShape.square,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      qrRef,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                        color: AppTheme.primaryCrimson,
+                      ),
                     ),
                   ),
                 ],
@@ -625,9 +690,10 @@ class DonorDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Present this QR reference code at blood camps or hospital counters for rapid verification.',
+              'Present this QR code at blood donation camps or hospital counters for instant check-in & verification.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              style: TextStyle(
+                  fontSize: 13, color: AppTheme.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 12),
           ],
