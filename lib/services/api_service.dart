@@ -252,6 +252,51 @@ class ApiService {
     }
   }
 
+  /// 6b. Get Provinces Reference List
+  /// GET /api/v1/provinces
+  static Future<List<Map<String, dynamic>>> getProvinces() async {
+    final uri = Uri.parse('$baseUrl/api/v1/provinces');
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      final list = data['data'] as List<dynamic>? ?? [];
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load provinces from server',
+      );
+    }
+  }
+
+  /// 6c. Get Districts Reference List
+  /// GET /api/v1/districts
+  static Future<List<Map<String, dynamic>>> getDistricts({String? provinceId}) async {
+    final query = (provinceId != null && provinceId.isNotEmpty)
+        ? '?province_id=$provinceId'
+        : '';
+    final uri = Uri.parse('$baseUrl/api/v1/districts$query');
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      final list = data['data'] as List<dynamic>? ?? [];
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load districts from server',
+      );
+    }
+  }
+
   /// 7. Complete Donor Profile Onboarding (first-time login wizard)
   /// POST /api/v1/donors/complete-profile
   static Future<Map<String, dynamic>> completeDonorOnboarding({
