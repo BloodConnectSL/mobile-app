@@ -43,6 +43,20 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
   int _totalCount = 0;
   int _totalPages = 1;
 
+  // Track confirmed camp IDs for current donor
+  final Set<String> _confirmedCampIds = {};
+  bool _isConfirming = false;
+
+  String? get _donorIdentifier {
+    final user = widget.initialUserData;
+    if (user == null) return null;
+    final donorId = user['donor_id']?.toString();
+    if (donorId != null && donorId.isNotEmpty) return donorId;
+    final userId = user['user_id']?.toString() ?? user['id']?.toString();
+    if (userId != null && userId.isNotEmpty) return userId;
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -345,13 +359,28 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     final organization = camp['organization'] as Map<String, dynamic>?;
     final provinceObj = camp['province'] as Map<String, dynamic>?;
     final districtObj = camp['district'] as Map<String, dynamic>?;
+    final campId = camp['id']?.toString() ?? '';
+
+    // Check confirmation status in background if not known
+    if (campId.isNotEmpty && _donorIdentifier != null && !_confirmedCampIds.contains(campId)) {
+      ApiService.checkCampConfirmation(campId: campId, donorId: _donorIdentifier!).then((confirmed) {
+        if (confirmed && mounted) {
+          setState(() {
+            _confirmedCampIds.add(campId);
+          });
+        }
+      });
+    }
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return DraggableScrollableSheet(
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            final isConfirmed = _confirmedCampIds.contains(campId);
+            return DraggableScrollableSheet(
           initialChildSize: 0.85,
           minChildSize: 0.5,
           maxChildSize: 0.95,
@@ -680,7 +709,118 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                           ),
                         ],
 
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
+
+                        // Confirm Participation Action Button
+                        if (isConfirmed) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppTheme.successBackground,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppTheme.successGreen.withValues(alpha: 0.3)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 22),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Participation Confirmed',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.successGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ] else ...[
+                          ElevatedButton.icon(
+                            onPressed: _isConfirming
+                                ? null
+                                : () async {
+                                    final donorId = _donorIdentifier;
+                                    if (campId.isEmpty || donorId == null) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Please log in with a valid donor profile to confirm participation.'),
+                                          backgroundColor: AppTheme.errorRed,
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    setModalState(() {
+                                      _isConfirming = true;
+                                    });
+
+                                    try {
+                                      await ApiService.confirmCampVisit(
+                                        campId: campId,
+                                        donorId: donorId,
+                                      );
+
+                                      if (!mounted) return;
+                                      setModalState(() {
+                                        _confirmedCampIds.add(campId);
+                                        _isConfirming = false;
+                                      });
+                                      setState(() {});
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Participation confirmed for $campName!'),
+                                          backgroundColor: AppTheme.successGreen,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      if (!mounted) return;
+                                      setModalState(() {
+                                        _isConfirming = false;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed to confirm participation: $e'),
+                                          backgroundColor: AppTheme.errorRed,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  },
+                            icon: _isConfirming
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.how_to_reg_rounded, size: 22),
+                            label: Text(
+                              _isConfirming ? 'Confirming...' : 'Confirm Participation',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF059669),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
 
                         // Prominent Google Maps Live Directions Button
                         ElevatedButton.icon(
@@ -699,7 +839,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                             backgroundColor: AppTheme.primaryCrimson,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            elevation: 3,
+                            elevation: 2,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -715,7 +855,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
         );
       },
     );
-  }
+  },
+);
+}
 
   Widget _buildDetailSection({
     required IconData icon,
@@ -1157,6 +1299,8 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
 
     final hospital = camp['hospital'] as Map<String, dynamic>?;
     final organizerName = hospital?['name'] ?? (camp['organization'] as Map<String, dynamic>?)?['legal_name'];
+    final campId = camp['id']?.toString() ?? '';
+    final isConfirmed = _confirmedCampIds.contains(campId);
 
     return Material(
       color: Colors.white,
@@ -1179,27 +1323,57 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.successBackground,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check_circle_rounded, size: 14, color: AppTheme.successGreen),
-                        SizedBox(width: 4),
-                        Text(
-                          'SCHEDULED',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.successGreen,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.successBackground,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, size: 14, color: AppTheme.successGreen),
+                            SizedBox(width: 4),
+                            Text(
+                              'SCHEDULED',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.successGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isConfirmed) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF86EFAC)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_rounded, size: 13, color: Color(0xFF15803D)),
+                              SizedBox(width: 3),
+                              Text(
+                                'Confirmed',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF15803D),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -383,6 +383,53 @@ class ApiService {
     }
   }
 
+  /// 9. Confirm Participation in Blood Camp
+  /// POST /api/v1/camps/confirm-visit
+  static Future<Map<String, dynamic>> confirmCampVisit({
+    required String campId,
+    required String donorId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/camps/confirm-visit');
+    final payload = jsonEncode({
+      'camp_id': campId,
+      'donor_id': donorId,
+    });
+
+    try {
+      final response = await http
+          .post(uri, headers: _defaultHeaders, body: payload)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to confirm camp participation',
+      );
+    }
+  }
+
+  /// 9b. Check Camp Confirmation Status
+  /// GET /api/v1/camps/:id/confirmation?donor_id=...
+  static Future<bool> checkCampConfirmation({
+    required String campId,
+    required String donorId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/camps/$campId/confirmation?donor_id=$donorId');
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data['is_confirmed'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Standard parser matching backend response envelopes
   static Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic> body;
