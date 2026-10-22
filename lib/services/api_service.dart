@@ -321,7 +321,7 @@ class ApiService {
       'blood_type_id': bloodTypeId,
       'ethnicity': ethnicity,
       'country': country,
-      if (location != null) 'location': location,
+      'location': ?location,
       if (cityId != null && cityId.isNotEmpty) 'city_id': cityId,
       if (districtId != null && districtId.isNotEmpty) 'district_id': districtId,
       if (provinceId != null && provinceId.isNotEmpty) 'province_id': provinceId,
@@ -339,6 +339,46 @@ class ApiService {
       throw ApiException(
         statusCode: 0,
         message: 'Network error: Failed to submit onboarding details to server',
+      );
+    }
+  }
+
+  /// 8. Get Blood Camps with optional filters and pagination
+  /// GET /api/v1/camps?province_id=...&district_id=...&search=...&page=...&limit=...
+  static Future<Map<String, dynamic>> getBloodCamps({
+    String? provinceId,
+    String? districtId,
+    String? search,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    if (provinceId != null && provinceId.isNotEmpty) {
+      queryParams['province_id'] = provinceId;
+    }
+    if (districtId != null && districtId.isNotEmpty) {
+      queryParams['district_id'] = districtId;
+    }
+    if (search != null && search.trim().isNotEmpty) {
+      queryParams['search'] = search.trim();
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/camps').replace(queryParameters: queryParams);
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load blood camps from server',
       );
     }
   }

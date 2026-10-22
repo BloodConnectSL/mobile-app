@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
+import 'blood_camps_screen.dart';
 import 'login_screen.dart';
 
 class DonorDashboardScreen extends StatelessWidget {
@@ -372,10 +373,11 @@ class DonorDashboardScreen extends StatelessWidget {
                     description: 'Explore upcoming drives',
                     color: AppTheme.primaryCrimson,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Displaying upcoming blood camps in your district'),
-                          behavior: SnackBarBehavior.floating,
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => BloodCampsScreen(
+                            initialUserData: userData,
+                          ),
                         ),
                       );
                     },
