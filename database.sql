@@ -217,9 +217,14 @@ CREATE TABLE public.blood_camps (
   preferred_blood_types jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  province_id uuid,
+  district_id uuid,
+  geo_location jsonb,
   CONSTRAINT blood_camps_pkey PRIMARY KEY (id),
   CONSTRAINT blood_camps_hospital_id_fkey FOREIGN KEY (hospital_id) REFERENCES public.hospitals(id),
-  CONSTRAINT blood_camps_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id)
+  CONSTRAINT blood_camps_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id),
+  CONSTRAINT blood_camps_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id) ON DELETE SET NULL,
+  CONSTRAINT blood_camps_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.districts(id) ON DELETE SET NULL
 );
 CREATE TABLE public.blood_inventory (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -275,4 +280,15 @@ CREATE TABLE public.otp (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT otp_pkey PRIMARY KEY (id)
 );
-
+CREATE TABLE public.provinces (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  province character varying NOT NULL UNIQUE,
+  CONSTRAINT provinces_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.districts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  district character varying NOT NULL UNIQUE,
+  province_id uuid NOT NULL,
+  CONSTRAINT districts_pkey PRIMARY KEY (id),
+  CONSTRAINT districts_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id) ON DELETE CASCADE
+);
