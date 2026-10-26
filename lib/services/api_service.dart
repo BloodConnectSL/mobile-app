@@ -344,11 +344,12 @@ class ApiService {
   }
 
   /// 8. Get Blood Camps with optional filters and pagination
-  /// GET /api/v1/camps?province_id=...&district_id=...&search=...&page=...&limit=...
+  /// GET /api/v1/camps?province_id=...&district_id=...&search=...&donor_id=...&page=...&limit=...
   static Future<Map<String, dynamic>> getBloodCamps({
     String? provinceId,
     String? districtId,
     String? search,
+    String? donorId,
     int page = 1,
     int limit = 10,
   }) async {
@@ -364,6 +365,9 @@ class ApiService {
     }
     if (search != null && search.trim().isNotEmpty) {
       queryParams['search'] = search.trim();
+    }
+    if (donorId != null && donorId.isNotEmpty) {
+      queryParams['donor_id'] = donorId;
     }
 
     final uri = Uri.parse('$baseUrl/api/v1/camps').replace(queryParameters: queryParams);
@@ -411,7 +415,35 @@ class ApiService {
     }
   }
 
-  /// 9b. Check Camp Confirmation Status
+  /// 9b. Cancel Participation in Blood Camp
+  /// POST /api/v1/camps/cancel-visit
+  static Future<Map<String, dynamic>> cancelCampVisit({
+    required String campId,
+    required String donorId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/camps/cancel-visit');
+    final payload = jsonEncode({
+      'camp_id': campId,
+      'donor_id': donorId,
+    });
+
+    try {
+      final response = await http
+          .post(uri, headers: _defaultHeaders, body: payload)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to cancel camp participation',
+      );
+    }
+  }
+
+  /// 9c. Check Camp Confirmation Status
   /// GET /api/v1/camps/:id/confirmation?donor_id=...
   static Future<bool> checkCampConfirmation({
     required String campId,

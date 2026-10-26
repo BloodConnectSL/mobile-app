@@ -46,6 +46,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
   // Track confirmed camp IDs for current donor
   final Set<String> _confirmedCampIds = {};
   bool _isConfirming = false;
+  bool _isCancelling = false;
 
   String? get _donorIdentifier {
     final user = widget.initialUserData;
@@ -176,6 +177,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
         provinceId: _selectedProvinceId,
         districtId: _selectedDistrictId,
         search: _searchController.text.trim(),
+        donorId: _donorIdentifier,
         page: _currentPage,
         limit: _pageSize,
       );
@@ -190,6 +192,15 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
 
       setState(() {
         _camps = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        for (final camp in _camps) {
+          final campId = camp['id']?.toString();
+          final status = camp['confirmation_status']?.toString();
+          if (campId != null && status == 'confirmed') {
+            _confirmedCampIds.add(campId);
+          } else if (campId != null && status == 'cancelled') {
+            _confirmedCampIds.remove(campId);
+          }
+        }
         _totalCount = total;
         _totalPages = totalPages > 0 ? totalPages : 1;
         _isLoadingCamps = false;
@@ -202,7 +213,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     }
   }
 
-  /// Launch Google Maps Directions from donor's current live location
+  /// Launch Google Maps Directions from donor's current live location with loading spinner
   Future<void> _openDirectionsInGoogleMaps(Map<String, dynamic> camp) async {
     double? destLat;
     double? destLng;
@@ -244,43 +255,91 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
       return;
     }
 
-    // 3. Try to get donor's live phone GPS location
-    Position? userPos;
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (serviceEnabled) {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.denied) {
-          permission = await Geolocator.requestPermission();
-        }
-        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-          userPos = await Geolocator.getCurrentPosition(
-            locationSettings: const LocationSettings(
-              accuracy: LocationAccuracy.medium,
-              timeLimit: Duration(seconds: 7),
+    // Show red spinner dialog while Google Maps is loading
+    bool isDialogShowing = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (dialogCtx) {
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            backgroundColor: Colors.white,
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3.2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryCrimson),
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  const Expanded(
+                    child: Text(
+                      'Google Map is opening...',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          );
-        }
-      }
-    } catch (_) {
-      // Permission denied or timeout — fallback to opening destination directly in maps
-    }
-
-    // 4. Build Google Maps URL
-    Uri mapsUri;
-    if (userPos != null) {
-      // Directions from live current location to destination
-      mapsUri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&origin=${userPos.latitude},${userPos.longitude}&destination=$destLat,$destLng&travelmode=driving',
-      );
-    } else {
-      // Direct destination location pin
-      mapsUri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=$destLat,$destLng',
-      );
-    }
+          ),
+        );
+      },
+    ).then((_) {
+      isDialogShowing = false;
+    });
 
     try {
+      // 3. Try to get donor's live phone GPS location
+      Position? userPos;
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+            userPos = await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.medium,
+                timeLimit: Duration(seconds: 4),
+              ),
+            );
+          }
+        }
+      } catch (_) {
+        // Permission denied or timeout — fallback to opening destination directly in maps
+      }
+
+      // 4. Build Google Maps URL
+      Uri mapsUri;
+      if (userPos != null) {
+        mapsUri = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&origin=${userPos.latitude},${userPos.longitude}&destination=$destLat,$destLng&travelmode=driving',
+        );
+      } else {
+        mapsUri = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=$destLat,$destLng',
+        );
+      }
+
+      // Small delay to allow the dialog animation and ensure smooth UX
+      await Future.delayed(const Duration(milliseconds: 650));
+
       final launched = await launchUrl(
         mapsUri,
         mode: LaunchMode.externalApplication,
@@ -296,6 +355,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
             backgroundColor: AppTheme.errorRed,
           ),
         );
+      }
+    } finally {
+      if (isDialogShowing && mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
       }
     }
   }
@@ -362,12 +425,22 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     final campId = camp['id']?.toString() ?? '';
 
     // Check confirmation status in background if not known
-    if (campId.isNotEmpty && _donorIdentifier != null && !_confirmedCampIds.contains(campId)) {
+    void Function(void Function())? modalSetStateFn;
+    if (campId.isNotEmpty && _donorIdentifier != null) {
       ApiService.checkCampConfirmation(campId: campId, donorId: _donorIdentifier!).then((confirmed) {
-        if (confirmed && mounted) {
+        if (mounted) {
           setState(() {
-            _confirmedCampIds.add(campId);
+            if (confirmed) {
+              _confirmedCampIds.add(campId);
+              camp['confirmation_status'] = 'confirmed';
+            } else {
+              _confirmedCampIds.remove(campId);
+              if (camp['confirmation_status'] == 'confirmed') {
+                camp['confirmation_status'] = 'cancelled';
+              }
+            }
           });
+          modalSetStateFn?.call(() {});
         }
       });
     }
@@ -379,7 +452,8 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
-            final isConfirmed = _confirmedCampIds.contains(campId);
+            modalSetStateFn = setModalState;
+            final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
             return DraggableScrollableSheet(
           initialChildSize: 0.85,
           minChildSize: 0.5,
@@ -711,7 +785,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
 
                         const SizedBox(height: 24),
 
-                        // Confirm Participation Action Button
+                        // Confirm / Cancel Participation Action Buttons
                         if (isConfirmed) ...[
                           Container(
                             width: double.infinity,
@@ -735,6 +809,89 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                                   ),
                                 ),
                               ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: _isCancelling
+                                ? null
+                                : () async {
+                                    final donorId = _donorIdentifier;
+                                    if (campId.isEmpty || donorId == null) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Please log in with a valid donor profile to cancel participation.'),
+                                          backgroundColor: AppTheme.errorRed,
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    setModalState(() {
+                                      _isCancelling = true;
+                                    });
+
+                                    try {
+                                      await ApiService.cancelCampVisit(
+                                        campId: campId,
+                                        donorId: donorId,
+                                      );
+
+                                      if (!mounted) return;
+                                      setModalState(() {
+                                        _confirmedCampIds.remove(campId);
+                                        _isCancelling = false;
+                                      });
+                                      setState(() {
+                                        _confirmedCampIds.remove(campId);
+                                        camp['confirmation_status'] = 'cancelled';
+                                      });
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Participation cancelled for $campName'),
+                                          backgroundColor: AppTheme.warningAmber,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      if (!mounted) return;
+                                      setModalState(() {
+                                        _isCancelling = false;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed to cancel participation: $e'),
+                                          backgroundColor: AppTheme.errorRed,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  },
+                            icon: _isCancelling
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppTheme.errorRed,
+                                    ),
+                                  )
+                                : const Icon(Icons.cancel_outlined, size: 22, color: AppTheme.errorRed),
+                            label: Text(
+                              _isCancelling ? 'Cancelling...' : 'Cancel Participation',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.errorRed,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppTheme.errorRed, width: 1.5),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -769,7 +926,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                                         _confirmedCampIds.add(campId);
                                         _isConfirming = false;
                                       });
-                                      setState(() {});
+                                      setState(() {
+                                        _confirmedCampIds.add(campId);
+                                        camp['confirmation_status'] = 'confirmed';
+                                      });
 
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
@@ -1300,7 +1460,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     final hospital = camp['hospital'] as Map<String, dynamic>?;
     final organizerName = hospital?['name'] ?? (camp['organization'] as Map<String, dynamic>?)?['legal_name'];
     final campId = camp['id']?.toString() ?? '';
-    final isConfirmed = _confirmedCampIds.contains(campId);
+    final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
 
     return Material(
       color: Colors.white,
@@ -1362,7 +1522,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                               Icon(Icons.check_rounded, size: 13, color: Color(0xFF15803D)),
                               SizedBox(width: 3),
                               Text(
-                                'Confirmed',
+                                'Participation Confirmed',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
