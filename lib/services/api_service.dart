@@ -462,6 +462,40 @@ class ApiService {
     }
   }
 
+  /// 10. Get Blood Donations History with optional universal search and pagination
+  /// GET /api/v1/donors/donations?donor_id=...&search=...&page=...&limit=...
+  static Future<Map<String, dynamic>> getDonations({
+    required String donorId,
+    String? search,
+    int page = 1,
+    int limit = 5,
+  }) async {
+    final queryParams = <String, String>{
+      'donor_id': donorId,
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    if (search != null && search.trim().isNotEmpty) {
+      queryParams['search'] = search.trim();
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/donors/donations').replace(queryParameters: queryParams);
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load donation records',
+      );
+    }
+  }
+
   /// Standard parser matching backend response envelopes
   static Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic> body;

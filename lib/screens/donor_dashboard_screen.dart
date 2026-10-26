@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
 import 'blood_camps_screen.dart';
+import 'donation_history_screen.dart';
 import 'login_screen.dart';
 
 class DonorDashboardScreen extends StatelessWidget {
@@ -397,10 +398,12 @@ class DonorDashboardScreen extends StatelessWidget {
                     description: 'Records and eligibility',
                     color: const Color(0xFF059669),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Last donation recorded: Eligible to donate!'),
-                          behavior: SnackBarBehavior.floating,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DonationHistoryScreen(
+                            userData: userData,
+                          ),
                         ),
                       );
                     },
