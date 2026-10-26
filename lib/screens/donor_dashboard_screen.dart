@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
 import 'blood_camps_screen.dart';
+import 'donation_camp_map_screen.dart';
 import 'donation_history_screen.dart';
 import 'login_screen.dart';
 
@@ -409,15 +410,17 @@ class DonorDashboardScreen extends StatelessWidget {
                     },
                   ),
                   _buildActionCard(
-                    icon: Icons.emergency_share_rounded,
-                    label: 'Request Blood',
-                    description: 'Submit urgent request',
-                    color: const Color(0xFFD97706),
+                    icon: Icons.map_rounded,
+                    label: 'Donation Camp Map View',
+                    description: 'Explore live camps in Sri Lanka',
+                    color: const Color(0xFF2563EB),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Blood request submission opened'),
-                          behavior: SnackBarBehavior.floating,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DonationCampMapScreen(
+                            userData: userData,
+                          ),
                         ),
                       );
                     },
