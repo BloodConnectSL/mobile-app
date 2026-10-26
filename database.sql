@@ -3,7 +3,7 @@
 
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  username text UNIQUE,
+  username text,
   password text,
   nic text UNIQUE,
   first_name text,
@@ -26,11 +26,13 @@ CREATE TABLE public.users (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   token_version integer DEFAULT 1,
-  CONSTRAINT users_pkey PRIMARY KEY (id)
+  city_geo_location jsonb,
+  CONSTRAINT users_pkey PRIMARY KEY (id),
+  CONSTRAINT users_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id),
+  CONSTRAINT users_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.districts(id)
 );
 CREATE TABLE public.organizations (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
   org_id text NOT NULL,
   phone jsonb NOT NULL,
   legal_name text NOT NULL,
@@ -42,8 +44,7 @@ CREATE TABLE public.organizations (
   email text NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT organizations_pkey PRIMARY KEY (id),
-  CONSTRAINT organization_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT organizations_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.hospitals (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -118,34 +119,13 @@ CREATE TABLE public.blood_donors (
   last_checked_eligibility timestamp with time zone,
   created_at timestamp with time zone,
   updated_at timestamp with time zone,
-  qr_ref_id text DEFAULT ('bcnt'::text || lpad(nextval('public.donor_qr_ref_seq'::regclass)::text, 3, '0'::text)) UNIQUE,
+  qr_ref_id text DEFAULT ('bcnt'::text || lpad((nextval('donor_qr_ref_seq'::regclass))::text, 3, '0'::text)) UNIQUE,
   qr_data text,
   CONSTRAINT blood_donors_pkey PRIMARY KEY (id),
   CONSTRAINT blood_donor_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT blood_donors_blood_type_id_fkey FOREIGN KEY (blood_type_id) REFERENCES public.blood_types(id),
   CONSTRAINT blood_donors_gender_id_fkey FOREIGN KEY (gender_id) REFERENCES public.genders(id)
 );
-
-CREATE SEQUENCE IF NOT EXISTS public.donor_qr_ref_seq START WITH 1;
-
-CREATE OR REPLACE FUNCTION public.sync_blood_donor_qr()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.qr_ref_id IS NULL OR NEW.qr_ref_id = '' THEN
-        NEW.qr_ref_id := 'bcnt' || lpad(nextval('public.donor_qr_ref_seq')::text, 3, '0');
-    END IF;
-    IF NEW.qr_data IS NULL OR NEW.qr_data = '' THEN
-        NEW.qr_data := NEW.qr_ref_id;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_sync_blood_donor_qr ON public.blood_donors;
-CREATE TRIGGER trg_sync_blood_donor_qr
-BEFORE INSERT OR UPDATE ON public.blood_donors
-FOR EACH ROW
-EXECUTE FUNCTION public.sync_blood_donor_qr();
 CREATE TABLE public.blood_types (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   abo_group character varying NOT NULL CHECK (abo_group::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'AB'::character varying, 'O'::character varying]::text[])),
@@ -223,8 +203,8 @@ CREATE TABLE public.blood_camps (
   CONSTRAINT blood_camps_pkey PRIMARY KEY (id),
   CONSTRAINT blood_camps_hospital_id_fkey FOREIGN KEY (hospital_id) REFERENCES public.hospitals(id),
   CONSTRAINT blood_camps_org_id_fkey FOREIGN KEY (org_id) REFERENCES public.organizations(id),
-  CONSTRAINT blood_camps_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id) ON DELETE SET NULL,
-  CONSTRAINT blood_camps_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.districts(id) ON DELETE SET NULL
+  CONSTRAINT blood_camps_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id),
+  CONSTRAINT blood_camps_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.districts(id)
 );
 CREATE TABLE public.blood_inventory (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -290,5 +270,23 @@ CREATE TABLE public.districts (
   district character varying NOT NULL UNIQUE,
   province_id uuid NOT NULL,
   CONSTRAINT districts_pkey PRIMARY KEY (id),
-  CONSTRAINT districts_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id) ON DELETE CASCADE
+  CONSTRAINT districts_province_id_fkey FOREIGN KEY (province_id) REFERENCES public.provinces(id)
+);
+CREATE TABLE public.cities (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  city character varying NOT NULL,
+  district_id uuid NOT NULL,
+  CONSTRAINT cities_pkey PRIMARY KEY (id),
+  CONSTRAINT cities_district_id_fkey FOREIGN KEY (district_id) REFERENCES public.districts(id)
+);
+CREATE TABLE public.camp_visit_confirmations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  donor_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  blood_camp_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  status text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT camp_visit_confirmations_pkey PRIMARY KEY (id),
+  CONSTRAINT camp_visit_confirmations_donor_id_fkey FOREIGN KEY (donor_id) REFERENCES public.blood_donors(id),
+  CONSTRAINT camp_visit_confirmations_blood_camp_id_fkey FOREIGN KEY (blood_camp_id) REFERENCES public.blood_camps(id)
 );
