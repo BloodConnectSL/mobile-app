@@ -194,61 +194,21 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Pending Verification Banner
-              if (!isVerified) ...[
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFDE68A), width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.amber.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline_rounded,
-                          color: Color(0xFFD97706), size: 22),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Please wait while your account to be verified (Donate first time through a camp to be verified)',
-                          style: TextStyle(
-                            color: Color(0xFF92400E),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              // User Greeting & Role Banner
+              // 1. User Greeting Hero Card (At the very top)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFB71C1C), Color(0xFFE53935)],
+                    colors: [Color(0xFFB71C1C), Color(0xFFD32F2F)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFB71C1C).withValues(alpha: 0.25),
-                      blurRadius: 14,
+                      color: const Color(0xFFB71C1C).withValues(alpha: 0.22),
+                      blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
                   ],
@@ -259,18 +219,18 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 28,
+                          radius: 26,
                           backgroundColor: Colors.white,
                           child: Text(
                             username.isNotEmpty ? username[0].toUpperCase() : 'D',
                             style: const TextStyle(
-                              fontSize: 24,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.primaryCrimson,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,8 +238,8 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                               Text(
                                 'Welcome back,',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -289,6 +249,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                                   color: Colors.white,
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.2,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -302,14 +263,12 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-
-
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const Divider(color: Colors.white24, height: 28),
+                    const Divider(color: Colors.white24, height: 26),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -323,6 +282,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                                 fontSize: 11,
                               ),
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               phone.isNotEmpty ? phone : 'Unlinked',
                               style: const TextStyle(
@@ -343,6 +303,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                                 fontSize: 11,
                               ),
                             ),
+                            const SizedBox(height: 2),
                             Text(
                               qrRef,
                               style: const TextStyle(
@@ -359,7 +320,103 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                   ],
                 ),
               ),
+
+              // 2. Pleasing Pending Verification Notice (Positioned after Welcome Card)
+              if (!isVerified) ...[
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(top: 14),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFFEE2E2), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFB71C1C).withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.verified_outlined,
+                          color: AppTheme.primaryCrimson,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Account Verification in Progress',
+                              style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            const Text(
+                              'Complete your first donation at any registered camp or hospital drive to unlock your official verified badge.',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 12,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => BloodCampsScreen(
+                                      initialUserData: userData,
+                                    ),
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Find upcoming camps',
+                                    style: TextStyle(
+                                      color: AppTheme.primaryCrimson,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 14,
+                                    color: AppTheme.primaryCrimson,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
+
 
               // Impact Metrics
               const Text(
@@ -417,8 +474,9 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 1.25,
+                childAspectRatio: 1.16,
                 children: [
+
                   _buildActionCard(
                     icon: Icons.event_available_rounded,
                     label: 'Find Blood Camps',
@@ -527,46 +585,54 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.025),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 22, color: color),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 17, color: color),
+            ),
+            const SizedBox(height: 10),
             Text(
               value,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: color,
+                letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,
               ),
             ),
             Text(
               subtitle,
               style: const TextStyle(
-                fontSize: 10,
-                color: AppTheme.textMuted,
+                fontSize: 10.5,
+                color: AppTheme.textSecondary,
               ),
             ),
           ],
@@ -584,28 +650,46 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
   }) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 0,
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        splashColor: color.withValues(alpha: 0.08),
+        highlightColor: color.withValues(alpha: 0.04),
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.025),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 22),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: color, size: 21),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 13,
+                    color: Colors.grey.shade400,
+                  ),
+                ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -613,16 +697,17 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                   Text(
                     label,
                     style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
+                      letterSpacing: -0.2,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     description,
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 11,
                       color: AppTheme.textSecondary,
                     ),
                     maxLines: 1,
@@ -636,6 +721,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
       ),
     );
   }
+
 
   void _showPassModal(
       BuildContext context, String qrRef, String qrData, String fullName) {
