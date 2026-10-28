@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/session_service.dart';
 import '../theme/app_theme.dart';
 import 'donor_registration_screen.dart';
-import 'donor_dashboard_screen.dart';
-import 'donor_onboarding_wizard_screen.dart';
-import 'org_admin_dashboard_screen.dart';
-import 'org_staff_dashboard_screen.dart';
-import 'system_admin_dashboard_screen.dart';
-import 'hospital_admin_dashboard_screen.dart';
-import 'hospital_staff_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,6 +48,9 @@ class _LoginScreenState extends State<LoginScreen> {
         password: password,
       );
 
+      // Persist active session for 24-hour auto-login
+      await SessionService.saveSession(data);
+
       if (!mounted) return;
 
       final rawRole = (data['role'] as String? ?? '').toUpperCase().trim();
@@ -65,52 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      bool isTruthy(dynamic val) {
-        if (val == null) return false;
-        if (val is bool) return val;
-        if (val is num) return val == 1;
-        if (val is String) {
-          final s = val.toLowerCase().trim();
-          return s == 'true' || s == '1' || s == 't' || s == 'yes';
-        }
-        return false;
-      }
-
-      // The onboarding wizard is shown ONLY when profile_completed is false.
-      // is_verified is strictly NOT used as the wizard display condition.
-      final profileCompleted = isTruthy(data['profile_completed']);
-
-      if ((rawRole == 'DONOR' || rawRole.isEmpty) && !profileCompleted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => DonorOnboardingWizardScreen(userData: data),
-          ),
-        );
-        return;
-      }
-
-      Widget destination;
-      switch (rawRole) {
-        case 'ORG_ADMIN':
-          destination = OrgAdminDashboardScreen(userData: data);
-          break;
-        case 'ORG_STAFF':
-          destination = OrgStaffDashboardScreen(userData: data);
-          break;
-        case 'SYSTEM_ADMIN':
-          destination = SystemAdminDashboardScreen(userData: data);
-          break;
-        case 'HOSPITAL_ADMIN':
-          destination = HospitalAdminDashboardScreen(userData: data);
-          break;
-        case 'HOSPITAL_STAFF':
-          destination = HospitalStaffDashboardScreen(userData: data);
-          break;
-        case 'DONOR':
-        default:
-          destination = DonorDashboardScreen(userData: data);
-          break;
-      }
+      final destination = SessionService.getDestinationScreen(data);
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => destination),

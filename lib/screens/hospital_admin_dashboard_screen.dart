@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/session_service.dart';
 import 'login_screen.dart';
 
 class HospitalAdminDashboardScreen extends StatelessWidget {
@@ -30,8 +31,10 @@ class HospitalAdminDashboardScreen extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0284C7),
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop();
+              await SessionService.clearSession();
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,

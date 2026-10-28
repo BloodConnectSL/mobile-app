@@ -5,6 +5,7 @@ import 'blood_camps_screen.dart';
 import 'donation_camp_map_screen.dart';
 import 'donation_history_screen.dart';
 import 'donor_profile_screen.dart';
+import '../services/session_service.dart';
 import 'login_screen.dart';
 
 class DonorDashboardScreen extends StatefulWidget {
@@ -39,6 +40,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
       setState(() {
         _userData = Map<String, dynamic>.from(updated);
       });
+      SessionService.updateUserData(_userData);
     }
   }
 
@@ -63,8 +65,10 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryCrimson,
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop();
+              await SessionService.clearSession();
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,

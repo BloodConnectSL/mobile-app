@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/api_service.dart';
+import '../services/session_service.dart';
 import '../theme/app_theme.dart';
 import 'donor_dashboard_screen.dart';
 import 'login_screen.dart';
@@ -323,6 +324,12 @@ class _DonorOnboardingWizardScreenState
         ),
       );
 
+      // Update stored session with completed profile status
+      widget.userData['profile_completed'] = true;
+      await SessionService.saveSession(widget.userData);
+
+      if (!mounted) return;
+
       // Direct to Donor Dashboard
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -355,8 +362,10 @@ class _DonorOnboardingWizardScreenState
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryCrimson,
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(ctx).pop();
+              await SessionService.clearSession();
+              if (!mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,

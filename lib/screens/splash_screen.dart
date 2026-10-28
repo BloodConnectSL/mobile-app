@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/session_service.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -35,21 +36,25 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animController.forward();
 
-    // Auto navigate after 2 seconds
-    _timer = Timer(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
-      }
+    // Auto navigate after 2 seconds based on active 24-hour session
+    _timer = Timer(const Duration(seconds: 2), () async {
+      if (!mounted) return;
+      final session = await SessionService.getActiveSession();
+      if (!mounted) return;
+
+      final Widget destination = session != null
+          ? SessionService.getDestinationScreen(session)
+          : const LoginScreen();
+
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => destination,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
     });
   }
 
