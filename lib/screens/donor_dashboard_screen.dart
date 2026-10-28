@@ -105,7 +105,73 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Donor Portal'),
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFB71C1C), Color(0xFFE53935)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryCrimson.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.bloodtype_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Blood',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primaryCrimson,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const Text(
+                      'Connect',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+                const Text(
+                  'Blood Donor',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textSecondary,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         centerTitle: false,
         actions: [
           IconButton(
@@ -120,6 +186,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
           ),
         ],
       ),
+
       body: SafeArea(
         child: SingleChildScrollView(
 
@@ -226,52 +293,16 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '@$username • ${isVerified ? "Verified Donor" : "Pending Verification"}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '@$username',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 6),
-                              InkWell(
-                                onTap: () => _openProfile(context),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white30),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.edit_note_rounded, color: Colors.white, size: 15),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'My Profile & Settings',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+
 
                             ],
                           ),
@@ -369,62 +400,16 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Urgent Need Banner
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFECACA)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.warning_amber_rounded,
-                      color: AppTheme.primaryCrimson,
-                      size: 26,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Urgent Need in Western Province',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryCrimson,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'O-Negative & B-Positive blood types are urgently required for emergency procedures at Colombo National Hospital.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF7F1D1D),
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Key Capabilities / Quick Actions
+              // Quick Services & Options
               const Text(
-                'Donor Capabilities',
+                'Quick Services',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
                 ),
               ),
+
               const SizedBox(height: 12),
               GridView.count(
                 crossAxisCount: 2,

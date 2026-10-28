@@ -140,8 +140,14 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
 
       // If province selected, load its districts
       if (_selectedProvinceId != null && _selectedProvinceId!.isNotEmpty) {
-        await _fetchDistricts(_selectedProvinceId!, preserveSelection: true);
+        final provExists = _provinces.any((p) => p['id']?.toString() == _selectedProvinceId);
+        if (provExists) {
+          await _fetchDistricts(_selectedProvinceId!, preserveSelection: true);
+        } else {
+          _selectedProvinceId = null;
+        }
       }
+
 
       if (mounted) {
         setState(() {
@@ -1354,15 +1360,25 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
               Icon(Icons.location_city_rounded,
                   color: AppTheme.textSecondary, size: 18),
               SizedBox(width: 10),
-              Text('Select Province', style: TextStyle(fontSize: 14)),
+              Text('Select Province', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
             ],
           ),
           items: _provinces.map((prov) {
             final id = prov['id']?.toString() ?? '';
-            final name = prov['name']?.toString() ?? prov['province_name']?.toString() ?? '';
+            final name = prov['province']?.toString() ??
+                prov['name']?.toString() ??
+                prov['province_name']?.toString() ??
+                '';
             return DropdownMenuItem<String>(
               value: id,
-              child: Text(name, style: const TextStyle(fontSize: 14)),
+              child: Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             );
           }).toList(),
           onChanged: (val) {
@@ -1406,15 +1422,25 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                     Icon(Icons.map_outlined,
                         color: AppTheme.textSecondary, size: 18),
                     SizedBox(width: 10),
-                    Text('Select District', style: TextStyle(fontSize: 14)),
+                    Text('Select District', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
                   ],
                 ),
                 items: _districts.map((dist) {
                   final id = dist['id']?.toString() ?? '';
-                  final name = dist['name']?.toString() ?? dist['district_name']?.toString() ?? '';
+                  final name = dist['district']?.toString() ??
+                      dist['name']?.toString() ??
+                      dist['district_name']?.toString() ??
+                      '';
                   return DropdownMenuItem<String>(
                     value: id,
-                    child: Text(name, style: const TextStyle(fontSize: 14)),
+                    child: Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {
@@ -1426,4 +1452,5 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
             ),
     );
   }
+
 }
