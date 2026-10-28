@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme/app_theme.dart';
 import 'blood_camps_screen.dart';
@@ -106,7 +107,13 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
 
     final isVerified = isTruthy(userData['is_verified']);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         titleSpacing: 16,
@@ -577,6 +584,7 @@ class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 

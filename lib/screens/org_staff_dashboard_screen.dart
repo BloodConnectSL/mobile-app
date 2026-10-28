@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/session_service.dart';
 import 'login_screen.dart';
 
@@ -57,7 +58,13 @@ class OrgStaffDashboardScreen extends StatelessWidget {
         : username;
     final phone = userData['phone'] ?? '';
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFFFFBEB).withAlpha(100),
       appBar: AppBar(
         backgroundColor: const Color(0xFFD97706),
@@ -350,6 +357,7 @@ class OrgStaffDashboardScreen extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

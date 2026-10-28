@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/session_service.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
@@ -58,7 +59,13 @@ class OrgAdminDashboardScreen extends StatelessWidget {
         : username;
     final phone = userData['phone'] ?? '';
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        SystemNavigator.pop();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text('Org Admin Portal'),
@@ -400,6 +407,7 @@ class OrgAdminDashboardScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

@@ -36,10 +36,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animController.forward();
 
+    // Pre-fetch active session during splash animation
+    final sessionFuture = SessionService.getActiveSession();
+
     // Auto navigate after 2 seconds based on active 24-hour session
     _timer = Timer(const Duration(seconds: 2), () async {
       if (!mounted) return;
-      final session = await SessionService.getActiveSession();
+      final session = await sessionFuture;
       if (!mounted) return;
 
       final Widget destination = session != null
