@@ -284,12 +284,35 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     return null;
   }
 
+  /// Only show camps that have not ended yet:
+  /// - End date is after today: show camp
+  /// - End date is today and end time is after current time: show camp
+  /// - Do not show ended, completed or cancelled camps
+  bool _isCampActive(Map<String, dynamic> camp) {
+    final status = (camp['status'] ?? '').toString().toUpperCase();
+    if (status == 'COMPLETED' || status == 'CANCELLED') {
+      return false;
+    }
+
+    final endTimeStr = camp['end_time']?.toString();
+    if (endTimeStr != null && endTimeStr.isNotEmpty) {
+      try {
+        final endTime = DateTime.parse(endTimeStr).toLocal();
+        final now = DateTime.now();
+        if (!endTime.isAfter(now)) {
+          return false;
+        }
+      } catch (_) {}
+    }
+    return true;
+  }
+
   @override
   void initState() {
     super.initState();
-    // Pre-populate with fallback camps so pins appear immediately
-    _allCamps = List.from(_fallbackCamps);
-    _filteredCamps = List.from(_fallbackCamps);
+    // Pre-populate with fallback active camps so pins appear immediately
+    _allCamps = _fallbackCamps.where((camp) => _isCampActive(camp)).toList();
+    _filteredCamps = List.from(_allCamps);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchCampsAndLocation();
@@ -318,7 +341,7 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
       final rawData = res['data'] as List<dynamic>? ?? [];
       final parsed = rawData
           .map((e) => Map<String, dynamic>.from(e as Map))
-          .where((camp) => _getCampLatLng(camp) != null)
+          .where((camp) => _isCampActive(camp) && _getCampLatLng(camp) != null)
           .toList();
 
       if (parsed.isNotEmpty && mounted) {
@@ -465,9 +488,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     final q = query.trim().toLowerCase();
     setState(() {
       if (q.isEmpty) {
-        _filteredCamps = _allCamps;
+        _filteredCamps = _allCamps.where((camp) => _isCampActive(camp)).toList();
       } else {
         _filteredCamps = _allCamps.where((camp) {
+          if (!_isCampActive(camp)) return false;
           final name = (camp['camp_name'] ?? '').toString().toLowerCase();
           final venue = (camp['venue_name'] ?? '').toString().toLowerCase();
           final city = (camp['city'] ?? '').toString().toLowerCase();
@@ -477,11 +501,17 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   : camp['district'] ?? '')
               .toString()
               .toLowerCase();
+          final province = (camp['province'] is Map
+                  ? camp['province']['province']
+                  : camp['province'] ?? '')
+              .toString()
+              .toLowerCase();
           return name.contains(q) ||
               venue.contains(q) ||
               city.contains(q) ||
               address.contains(q) ||
-              district.contains(q);
+              district.contains(q) ||
+              province.contains(q);
         }).toList();
       }
     });

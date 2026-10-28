@@ -105,6 +105,29 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     }
   }
 
+  /// Only show camps that have not ended yet:
+  /// - End date is after today: show camp
+  /// - End date is today and end time is after current time: show camp
+  /// - Do not show ended, completed or cancelled camps
+  bool _isCampActive(Map<String, dynamic> camp) {
+    final status = (camp['status'] ?? '').toString().toUpperCase();
+    if (status == 'COMPLETED' || status == 'CANCELLED') {
+      return false;
+    }
+
+    final endTimeStr = camp['end_time']?.toString();
+    if (endTimeStr != null && endTimeStr.isNotEmpty) {
+      try {
+        final endTime = DateTime.parse(endTimeStr).toLocal();
+        final now = DateTime.now();
+        if (!endTime.isAfter(now)) {
+          return false;
+        }
+      } catch (_) {}
+    }
+    return true;
+  }
+
   /// When Province changes
   Future<void> _onProvinceSelected(String? provinceId, String? provinceName, {String? defaultDistrictId}) async {
     setState(() {
@@ -119,7 +142,12 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
       _currentPage = 1;
     });
 
-    if (provinceId == null || provinceId.isEmpty) return;
+    if (provinceId == null || provinceId.isEmpty) {
+      if (_searchController.text.trim().isNotEmpty) {
+        _fetchCamps();
+      }
+      return;
+    }
 
     try {
       final districts = await ApiService.getDistricts(provinceId: provinceId);
@@ -135,13 +163,18 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
         );
         if (matchedDistrict.isNotEmpty) {
           _onDistrictSelected(defaultDistrictId, matchedDistrict['district']?.toString());
+          return;
         }
       }
+
+      // Automatically fetch all camps for this province
+      _fetchCamps();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load districts: $e')),
       );
+      _fetchCamps();
     }
   }
 
@@ -157,7 +190,8 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
 
   /// Fetch camps matching selected province, district, search text and page
   Future<void> _fetchCamps({int page = 1}) async {
-    if (_selectedProvinceId == null && _selectedDistrictId == null) {
+    final search = _searchController.text.trim();
+    if (_selectedProvinceId == null && _selectedDistrictId == null && search.isEmpty) {
       setState(() {
         _camps = [];
         _totalCount = 0;
@@ -176,22 +210,27 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
       final res = await ApiService.getBloodCamps(
         provinceId: _selectedProvinceId,
         districtId: _selectedDistrictId,
-        search: _searchController.text.trim(),
+        search: search.isNotEmpty ? search : null,
         donorId: _donorIdentifier,
         page: _currentPage,
         limit: _pageSize,
       );
 
       final rawData = res['data'] as List<dynamic>? ?? [];
+      final activeCamps = rawData
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .where((camp) => _isCampActive(camp))
+          .toList();
+
       final total = res['total'] is int
           ? res['total'] as int
-          : (res['total'] is num ? (res['total'] as num).toInt() : rawData.length);
+          : (res['total'] is num ? (res['total'] as num).toInt() : activeCamps.length);
       final totalPages = res['total_pages'] is int
           ? res['total_pages'] as int
           : (total > 0 ? (total / _pageSize).ceil() : 1);
 
       setState(() {
-        _camps = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _camps = activeCamps;
         for (final camp in _camps) {
           final campId = camp['id']?.toString();
           final status = camp['confirmation_status']?.toString();
@@ -1161,7 +1200,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
 
                       // District Dropdown
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: DropdownButtonFormField<String?>(
                           value: _selectedDistrictId,
                           isExpanded: true,
                           decoration: InputDecoration(
@@ -1174,29 +1213,43 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                             ),
                           ),
                           hint: Text(
-                            _selectedProvinceId == null ? 'Select Province' : 'Choose District',
+                            _selectedProvinceId == null ? 'Select Province' : 'All Districts',
                             style: const TextStyle(fontSize: 13),
                           ),
-                          items: _districts.map((d) {
-                            final id = d['id']?.toString() ?? '';
-                            final name = d['district']?.toString() ?? 'District';
-                            return DropdownMenuItem<String>(
-                              value: id,
-                              child: Text(
-                                name,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          items: [
+                            if (_selectedProvinceId != null)
+                              const DropdownMenuItem<String?>(
+                                value: null,
+                                child: Text(
+                                  'All Districts',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryCrimson),
+                                ),
                               ),
-                            );
-                          }).toList(),
+                            ..._districts.map((d) {
+                              final id = d['id']?.toString() ?? '';
+                              final name = d['district']?.toString() ?? 'District';
+                              return DropdownMenuItem<String?>(
+                                value: id,
+                                child: Text(
+                                  name,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                ),
+                              );
+                            }),
+                          ],
                           onChanged: _selectedProvinceId == null
                               ? null
                               : (val) {
-                                  final match = _districts.firstWhere(
-                                    (d) => d['id']?.toString() == val,
-                                    orElse: () => {},
-                                  );
-                                  _onDistrictSelected(val, match['district']?.toString());
+                                  if (val == null || val.isEmpty) {
+                                    _onDistrictSelected(null, null);
+                                  } else {
+                                    final match = _districts.firstWhere(
+                                      (d) => d['id']?.toString() == val,
+                                      orElse: () => {},
+                                    );
+                                    _onDistrictSelected(val, match['district']?.toString());
+                                  }
                                 },
                         ),
                       ),
