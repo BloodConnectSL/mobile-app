@@ -496,6 +496,86 @@ class ApiService {
     }
   }
 
+  /// 11. Get Donor Profile
+  /// GET /api/v1/donors/profile?user_id=...
+  static Future<Map<String, dynamic>> getDonorProfile({
+    String? userId,
+    String? donorId,
+  }) async {
+    final queryParams = <String, String>{};
+    if (userId != null && userId.isNotEmpty) {
+      queryParams['user_id'] = userId;
+    }
+    if (donorId != null && donorId.isNotEmpty) {
+      queryParams['donor_id'] = donorId;
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/donors/profile').replace(queryParameters: queryParams);
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as Map<String, dynamic>?) ?? data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load donor profile',
+      );
+    }
+  }
+
+  /// 12. Update Donor Profile
+  /// PUT /api/v1/donors/profile
+  static Future<Map<String, dynamic>> updateDonorProfile({
+    required String userId,
+    String? firstName,
+    String? lastName,
+    String? address,
+    String? dateOfBirth,
+    String? gender,
+    String? provinceId,
+    String? districtId,
+    String? phone,
+    String? otp,
+    String? verificationToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/donors/profile');
+    final Map<String, dynamic> payload = {
+      'user_id': userId,
+    };
+    if (firstName != null) payload['first_name'] = firstName;
+    if (lastName != null) payload['last_name'] = lastName;
+    if (address != null) payload['address'] = address;
+    if (dateOfBirth != null) payload['date_of_birth'] = dateOfBirth;
+    if (gender != null) payload['gender'] = gender;
+    if (provinceId != null) payload['province_id'] = provinceId;
+    if (districtId != null) payload['district_id'] = districtId;
+    if (phone != null) payload['phone'] = phone;
+    if (otp != null && otp.isNotEmpty) payload['otp'] = otp;
+    if (verificationToken != null && verificationToken.isNotEmpty) {
+      payload['verification_token'] = verificationToken;
+    }
+
+    try {
+      final response = await http
+          .put(uri, headers: _defaultHeaders, body: jsonEncode(payload))
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return data;
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to update profile',
+      );
+    }
+  }
+
+
   /// Standard parser matching backend response envelopes
   static Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic> body;

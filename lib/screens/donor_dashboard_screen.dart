@@ -4,15 +4,43 @@ import '../theme/app_theme.dart';
 import 'blood_camps_screen.dart';
 import 'donation_camp_map_screen.dart';
 import 'donation_history_screen.dart';
+import 'donor_profile_screen.dart';
 import 'login_screen.dart';
 
-class DonorDashboardScreen extends StatelessWidget {
+class DonorDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
   const DonorDashboardScreen({
     super.key,
     required this.userData,
   });
+
+  @override
+  State<DonorDashboardScreen> createState() => _DonorDashboardScreenState();
+}
+
+class _DonorDashboardScreenState extends State<DonorDashboardScreen> {
+  late Map<String, dynamic> _userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _userData = Map<String, dynamic>.from(widget.userData);
+  }
+
+  Future<void> _openProfile(BuildContext context) async {
+    final updated = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(
+        builder: (_) => DonorProfileScreen(userData: _userData),
+      ),
+    );
+
+    if (updated != null && mounted) {
+      setState(() {
+        _userData = Map<String, dynamic>.from(updated);
+      });
+    }
+  }
 
   void _handleLogout(BuildContext context) {
     showDialog(
@@ -51,6 +79,7 @@ class DonorDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userData = _userData;
     final username = userData['username'] ?? 'Donor';
     final firstName = userData['first_name'] ?? '';
     final lastName = userData['last_name'] ?? '';
@@ -80,6 +109,11 @@ class DonorDashboardScreen extends StatelessWidget {
         centerTitle: false,
         actions: [
           IconButton(
+            tooltip: 'My Profile',
+            icon: const Icon(Icons.account_circle_outlined, color: AppTheme.primaryCrimson, size: 28),
+            onPressed: () => _openProfile(context),
+          ),
+          IconButton(
             tooltip: 'Log Out',
             icon: const Icon(Icons.logout_rounded, color: AppTheme.primaryCrimson),
             onPressed: () => _handleLogout(context),
@@ -88,6 +122,7 @@ class DonorDashboardScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,6 +243,36 @@ class DonorDashboardScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 6),
+                              InkWell(
+                                onTap: () => _openProfile(context),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.white30),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.edit_note_rounded, color: Colors.white, size: 15),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'My Profile & Settings',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
                             ],
                           ),
                         ),
@@ -425,8 +490,16 @@ class DonorDashboardScreen extends StatelessWidget {
                       );
                     },
                   ),
+                  _buildActionCard(
+                    icon: Icons.person_rounded,
+                    label: 'My Profile',
+                    description: 'View & update profile',
+                    color: const Color(0xFFD97706),
+                    onTap: () => _openProfile(context),
+                  ),
                 ],
               ),
+
               const SizedBox(height: 32),
 
               // Logout Button
