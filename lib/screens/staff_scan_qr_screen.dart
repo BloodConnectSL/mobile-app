@@ -972,96 +972,109 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ),
           ),
 
-          // Eligibility Banner
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            color: isEligible ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
-            child: Row(
+          // Medical Status & Camp Recording Badges (Clean, rounded, pleasing to the eyes)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  isEligible ? Icons.verified_rounded : Icons.info_outline_rounded,
-                  color: isEligible ? const Color(0xFF16A34A) : const Color(0xFFD97706),
-                  size: 22,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isEligible ? 'ELIGIBLE TO DONATE' : 'DONATION INTERVAL STATUS',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                          color: isEligible ? const Color(0xFF15803D) : const Color(0xFFB45309),
-                        ),
-                      ),
-                      Text(
-                        eligibilityMsg.isNotEmpty
-                            ? eligibilityMsg
-                            : (isEligible ? 'Donor meets donation criteria.' : 'Medical check recommended.'),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isEligible ? const Color(0xFF166534) : const Color(0xFF92400E),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Already Recorded Banner (Prominent Alert)
-          if (isAlreadyRecorded)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFEE2E2),
-                border: Border(
-                  top: BorderSide(color: Color(0xFFFECACA), width: 1),
-                  bottom: BorderSide(color: Color(0xFFFECACA), width: 1),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.lock_clock_rounded,
-                    color: Color(0xFFDC2626),
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
+                if (isAlreadyRecorded)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1F2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFECDD3)),
+                    ),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'DONATION ALREADY RECORDED',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                            color: Color(0xFFB91C1C),
+                        const Icon(
+                          Icons.lock_clock_rounded,
+                          color: Color(0xFFE11D48),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Donation Already Recorded',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF9F1239),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                alreadyRecordedMsg,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF881337),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          alreadyRecordedMsg,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF991B1B),
-                            height: 1.3,
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isEligible ? const Color(0xFFF0FDF4) : const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isEligible ? const Color(0xFFBBF7D0) : const Color(0xFFFDE68A),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          isEligible ? Icons.check_circle_outline_rounded : Icons.schedule_rounded,
+                          color: isEligible ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                          size: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isEligible ? 'Eligible to Donate' : 'Donation Interval Notice',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: isEligible ? const Color(0xFF166534) : const Color(0xFF92400E),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                eligibilityMsg.isNotEmpty
+                                    ? eligibilityMsg
+                                    : (isEligible ? 'Donor meets standard donation interval criteria.' : 'Medical check recommended.'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: isEligible ? const Color(0xFF14532D) : const Color(0xFF78350F),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
+          ),
 
           Padding(
             padding: const EdgeInsets.all(20),
