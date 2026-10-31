@@ -711,9 +711,9 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
     final end = (_currentPage * _pageSize) > _totalCount ? _totalCount : (_currentPage * _pageSize);
 
     return Container(
-      color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: const BoxDecoration(
+        color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Row(
