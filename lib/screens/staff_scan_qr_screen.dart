@@ -25,6 +25,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
   );
   final TextEditingController _manualInputController = TextEditingController();
 
+  int _scannerKeyIndex = 0;
   bool _isCameraActive = true;
   bool _isTorchOn = false;
   bool _isLoading = false;
@@ -70,6 +71,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     return _staffRole.contains('ORG');
   }
 
+  bool _isBloodGroupValid(String? bg) {
+    if (bg == null) return false;
+    final clean = bg.trim().toUpperCase();
+    if (clean.isEmpty ||
+        clean.contains('UNKNOWN') ||
+        clean.contains('NOT_SPECIFIED') ||
+        clean.contains('UNSPECIFIED')) {
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _loadActiveDuty() async {
     final staffId = _staffUserId;
     if (staffId.isEmpty) return;
@@ -112,6 +125,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     });
 
     try {
+      await _scannerController.stop();
+    } catch (_) {}
+
+    try {
       final result = await ApiService.scanDonor(clean);
       if (mounted) {
         setState(() {
@@ -126,6 +143,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           _errorMessage = e.message;
           _isLoading = false;
         });
+        try {
+          _scannerController.start();
+        } catch (_) {}
       }
     } catch (_) {
       if (mounted) {
@@ -133,6 +153,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           _errorMessage = 'Could not verify donor. Please check connection and try again.';
           _isLoading = false;
         });
+        try {
+          _scannerController.start();
+        } catch (_) {}
       }
     }
   }
@@ -149,14 +172,28 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     }
   }
 
-  void _resetScanner() {
+  Future<void> _resetScanner() async {
     setState(() {
       _scannedDonor = null;
       _errorMessage = null;
       _isCameraActive = true;
+      _scannerKeyIndex++;
       _manualInputController.clear();
     });
-    _scannerController.start();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (mounted) {
+        try {
+          await _scannerController.stop();
+          await _scannerController.start();
+        } catch (_) {
+          try {
+            await _scannerController.start();
+          } catch (_) {}
+        }
+      }
+    });
   }
 
   // ─── Record Blood Donation Bottom Sheet ────────────────────────────────────
@@ -179,7 +216,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               ],
             ),
             content: const Text(
-              'You cannot record donations at this time because your organization account is not assigned to an ongoing blood camp in assigned_staff_members.\n\nPlease contact your Organization Administrator.',
+              'You cannot record donations at this time because your account is not assigned to an ongoing blood camp in assigned_staff_members.\n\nPlease contact your Organization Administrator.',
             ),
             actions: [
               TextButton(
@@ -213,154 +250,196 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     final donorName = donation['donor_name'] ?? _scannedDonor?['full_name'] ?? 'Donor';
     final vol = donation['volume_ml'] ?? 450;
     final bloodGroup = donation['blood_group'] ?? _scannedDonor?['blood_group'] ?? '';
-    final isCamp = donation['is_camp'] == true;
+    final hasValidBg = _isBloodGroupValid(bloodGroup);
+    final donorDisplay = hasValidBg ? '$donorName ($bloodGroup)' : donorName;
+
     final facilityName = donation['camp_name'] ??
         donation['hospital_name'] ??
         (_activeDuty?['facility_name'] ?? 'Facility');
     final donationId = donation['donation_id'] ?? '';
 
+    final screenHeight = MediaQuery.of(context).size.height;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: const Color(0xFFDCFCE7),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF86EFAC), width: 3),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: double.infinity,
+          constraints: BoxConstraints(
+            maxWidth: 420,
+            maxHeight: screenHeight * 0.85,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-              child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 40),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Donation Uploaded!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Blood donation records successfully committed to database.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-            ),
-            const SizedBox(height: 20),
-
-            // Details card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Column(
-                children: [
-                  _buildReceiptRow('Donor', '$donorName ($bloodGroup)'),
-                  const Divider(height: 16),
-                  _buildReceiptRow('Volume', '$vol mL'),
-                  const Divider(height: 16),
-                  _buildReceiptRow('Facility', facilityName),
-                  const Divider(height: 16),
-                  _buildReceiptRow(
-                    'Entry Mode',
-                    isCamp ? 'isCamp: TRUE' : 'isHospital: TRUE',
-                    highlight: true,
-                  ),
-                  if (donationId.isNotEmpty) ...[
-                    const Divider(height: 16),
-                    _buildReceiptRow(
-                      'Donation ID',
-                      donationId.length > 12
-                          ? '${donationId.substring(0, 8)}...'
-                          : donationId,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Actions
-            Row(
+            ],
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      _resetScanner();
-                    },
-                    child: const Text(
-                      'Scan Next',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
-                    ),
+                Container(
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF86EFAC), width: 3),
+                  ),
+                  child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 38),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Donation Uploaded!',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB71C1C),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => StaffDonorHistoryScreen(
-                            staffUserData: widget.staffUserData,
-                            initialSearch: _scannedDonor?['nic'] ?? '',
+                const SizedBox(height: 6),
+                Text(
+                  'Blood donation records successfully committed to database.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 18),
+
+                // Details card (Fully responsive wrapping to prevent overflow)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildReceiptRow('Donor', donorDisplay),
+                      const Divider(height: 14),
+                      _buildReceiptRow('Volume', '$vol mL'),
+                      const Divider(height: 14),
+                      _buildReceiptRow('Facility', facilityName),
+                      if (donationId.isNotEmpty) ...[
+                        const Divider(height: 14),
+                        _buildReceiptRow(
+                          'Donation ID',
+                          donationId.length > 14
+                              ? '${donationId.substring(0, 10)}...'
+                              : donationId,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 22),
+
+                // Responsive Actions Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _resetScanner();
+                        },
+                        child: const Text(
+                          'Scan Next',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
-                      );
-                    },
-                    child: const Text(
-                      'View History',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFB71C1C),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => StaffDonorHistoryScreen(
+                                staffUserData: widget.staffUserData,
+                                initialSearch: _scannedDonor?['nic'] ?? '',
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'History',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildReceiptRow(String label, String value, {bool highlight = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: highlight ? const Color(0xFFB71C1C) : AppTheme.textPrimary,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 85,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: highlight ? const Color(0xFFB71C1C) : AppTheme.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -421,7 +500,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
 
               const SizedBox(height: 16),
 
-              // 3. Manual Search / ID Input Panel
+              // 3. Manual Search / ID Input Panel (Quick test chips removed)
               _buildManualInputPanel(),
 
               const SizedBox(height: 24),
@@ -515,16 +594,20 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      isCamp ? 'ONGOING BLOOD CAMP' : 'HOSPITAL BLOOD BANK',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                        color: hasOngoing ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                    Expanded(
+                      child: Text(
+                        isCamp ? 'ONGOING BLOOD CAMP' : 'HOSPITAL BLOOD BANK',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                          color: hasOngoing ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
@@ -532,7 +615,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        isCamp ? (hasOngoing ? 'isCamp: TRUE' : 'NO CAMP') : 'isHospital: TRUE',
+                        isCamp ? (hasOngoing ? 'FIELD DRIVE' : 'INACTIVE') : 'HOSPITAL',
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -550,6 +633,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (venue.isNotEmpty) ...[
                   const SizedBox(height: 2),
@@ -589,6 +674,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
         children: [
           if (_isCameraActive)
             MobileScanner(
+              key: ValueKey(_scannerKeyIndex),
               controller: _scannerController,
               onDetect: _onDetect,
             )
@@ -710,7 +796,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     final name = donor['full_name'] ?? 'Donor Name';
     final nic = donor['nic'] ?? 'Unlinked';
     final phone = donor['phone'] ?? 'Unlinked';
-    final bloodGroup = donor['blood_group'] ?? 'Unknown';
+    final rawBloodGroup = donor['blood_group']?.toString() ?? '';
+    final hasValidBg = _isBloodGroupValid(rawBloodGroup);
+    final bloodGroup = hasValidBg ? rawBloodGroup.trim() : '';
+
     final gender = donor['gender'] ?? 'Not Specified';
     final age = donor['age'] ?? 0;
     final totalDonations = donor['total_donations'] ?? 0;
@@ -753,6 +842,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ),
             child: Row(
               children: [
+                // Clean blood group or profile icon (NEVER shows "Unknown")
                 Container(
                   width: 58,
                   height: 58,
@@ -768,14 +858,20 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     ],
                   ),
                   child: Center(
-                    child: Text(
-                      bloodGroup,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.primaryCrimson,
-                      ),
-                    ),
+                    child: hasValidBg
+                        ? Text(
+                            bloodGroup,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.primaryCrimson,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person_rounded,
+                            size: 32,
+                            color: AppTheme.primaryCrimson,
+                          ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -801,6 +897,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       if (qrRef.isNotEmpty)
                         Text(
@@ -809,6 +907,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                             fontSize: 11,
                             color: Colors.white.withValues(alpha: 0.75),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                     ],
                   ),
@@ -871,6 +971,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                         value: phone,
                       ),
                     ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _buildDetailTile(
                         icon: Icons.person_outline_rounded,
@@ -890,6 +991,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                         value: '$totalDonations units',
                       ),
                     ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _buildDetailTile(
                         icon: Icons.history_rounded,
@@ -1018,6 +1120,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     );
   }
 
+  // ─── Manual Input Panel (Clean, without quick test chips) ───────────────────
   Widget _buildManualInputPanel() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -1050,7 +1153,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                 child: TextField(
                   controller: _manualInputController,
                   decoration: InputDecoration(
-                    hintText: 'e.g. bcnt001 or 200315810516',
+                    hintText: 'Enter NIC or Pass ID',
                     prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryCrimson),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
@@ -1078,7 +1181,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB71C1C),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     elevation: 0,
                   ),
                   onPressed: () => _verifyIdentifier(_manualInputController.text),
@@ -1113,37 +1216,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          const Text(
-            'Quick Test Chips:',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildSampleChip('bcnt001'),
-              _buildSampleChip('bcnt005'),
-              _buildSampleChip('200315810516'),
-              _buildSampleChip('200315810517'),
-            ],
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSampleChip(String code) {
-    return ActionChip(
-      label: Text(code),
-      labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryCrimson),
-      backgroundColor: const Color(0xFFFEE2E2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      onPressed: () {
-        _manualInputController.text = code;
-        _verifyIdentifier(code);
-      },
     );
   }
 }
@@ -1212,6 +1286,18 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
 
   bool get _isOrgStaff => _staffRole.contains('ORG');
 
+  bool _isBloodGroupValid(String? bg) {
+    if (bg == null) return false;
+    final clean = bg.trim().toUpperCase();
+    if (clean.isEmpty ||
+        clean.contains('UNKNOWN') ||
+        clean.contains('NOT_SPECIFIED') ||
+        clean.contains('UNSPECIFIED')) {
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _submitDonation() async {
     final donorId = widget.scannedDonor['donor_id']?.toString() ??
         widget.scannedDonor['id']?.toString() ??
@@ -1259,7 +1345,10 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
   Widget build(BuildContext context) {
     final donorName = widget.scannedDonor['full_name'] ?? 'Donor';
     final nic = widget.scannedDonor['nic'] ?? '';
-    final bg = widget.scannedDonor['blood_group'] ?? 'Unknown';
+    final rawBg = widget.scannedDonor['blood_group']?.toString() ?? '';
+    final hasValidBg = _isBloodGroupValid(rawBg);
+    final bg = hasValidBg ? rawBg.trim() : '';
+
     final facility = widget.activeDuty?['facility_name'] ?? (_isOrgStaff ? 'Field Camp' : 'Hospital Blood Bank');
 
     return Container(
@@ -1290,7 +1379,7 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
               ),
             ),
 
-            // Header Banner
+            // Header Banner (No "Unknown" text, no isCamp: true)
             Container(
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
@@ -1310,14 +1399,20 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
-                      child: Text(
-                        bg,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.primaryCrimson,
-                        ),
-                      ),
+                      child: hasValidBg
+                          ? Text(
+                              bg,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: AppTheme.primaryCrimson,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person_rounded,
+                              size: 28,
+                              color: AppTheme.primaryCrimson,
+                            ),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -1335,23 +1430,26 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          'NIC: $nic',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.85),
+                        if (nic.isNotEmpty)
+                          Text(
+                            'NIC: $nic',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
                         const SizedBox(height: 2),
                         Text(
-                          _isOrgStaff
-                              ? 'Camp Assignment: $facility (isCamp: true)'
-                              : 'Hospital Duty: $facility (isHospital: true)',
+                          _isOrgStaff ? 'Assigned Camp: $facility' : 'Facility: $facility',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFFFFD7D7),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
