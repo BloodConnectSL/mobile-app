@@ -186,7 +186,7 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
       String dayKey = 'Unknown Date';
       if (raw['donation_date'] != null) {
         try {
-          final dt = DateTime.parse(raw['donation_date']);
+          final dt = DateTime.parse(raw['donation_date'].toString()).toLocal();
           dayKey = DateFormat('yyyy-MM-dd').format(dt);
         } catch (_) {}
       }
@@ -200,19 +200,24 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
   String _formatDayTitle(String dayKey) {
     if (dayKey == 'Unknown Date') return 'Undated Donations';
     try {
-      final dt = DateTime.parse(dayKey);
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final target = DateTime(dt.year, dt.month, dt.day);
+      final parts = dayKey.split('-');
+      if (parts.length == 3) {
+        final target = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final yesterday = today.subtract(const Duration(days: 1));
 
-      final diffDays = today.difference(target).inDays;
-      if (diffDays == 0) {
-        return 'Today • ${DateFormat('EEEE, MMM dd, yyyy').format(dt)}';
-      } else if (diffDays == 1) {
-        return 'Yesterday • ${DateFormat('EEEE, MMM dd, yyyy').format(dt)}';
-      } else {
-        return DateFormat('EEEE, MMM dd, yyyy').format(dt);
+        final formattedDate = DateFormat('EEEE, MMM dd, yyyy').format(target);
+        if (target.year == today.year && target.month == today.month && target.day == today.day) {
+          return 'Today • $formattedDate';
+        } else if (target.year == yesterday.year && target.month == yesterday.month && target.day == yesterday.day) {
+          return 'Yesterday • $formattedDate';
+        } else {
+          return formattedDate;
+        }
       }
+      final dt = DateTime.parse(dayKey).toLocal();
+      return DateFormat('EEEE, MMM dd, yyyy').format(dt);
     } catch (_) {
       return dayKey;
     }
@@ -412,7 +417,12 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
   // ─── Grouped Day-by-Day List View ──────────────────────────────────────────
   Widget _buildGroupedListView() {
     final grouped = _groupDonationsByDay();
-    final dayKeys = grouped.keys.toList();
+    final dayKeys = grouped.keys.toList()
+      ..sort((a, b) {
+        if (a == 'Unknown Date') return 1;
+        if (b == 'Unknown Date') return -1;
+        return b.compareTo(a);
+      });
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -498,7 +508,7 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
     String timeStr = '';
     if (item['donation_date'] != null) {
       try {
-        final dt = DateTime.parse(item['donation_date']);
+        final dt = DateTime.parse(item['donation_date'].toString()).toLocal();
         timeStr = DateFormat('hh:mm a').format(dt);
       } catch (_) {}
     }
@@ -834,7 +844,7 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
     String dateFull = 'Recorded Date';
     if (item['donation_date'] != null) {
       try {
-        final dt = DateTime.parse(item['donation_date']);
+        final dt = DateTime.parse(item['donation_date'].toString()).toLocal();
         dateFull = DateFormat('MMMM dd, yyyy • hh:mm a').format(dt);
       } catch (_) {}
     }

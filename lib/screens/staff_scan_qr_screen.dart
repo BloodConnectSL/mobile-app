@@ -897,7 +897,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ? 'Blood donation already recorded from this donor for this camp.'
             : 'Blood donation already recorded from this donor today.');
     final lastDonation = donor['last_donation_date'] != null
-        ? DateFormat('yyyy-MM-dd').format(DateTime.parse(donor['last_donation_date']))
+        ? DateFormat('yyyy-MM-dd').format(DateTime.parse(donor['last_donation_date'].toString()).toLocal())
         : 'Never Donated';
 
     return Container(
