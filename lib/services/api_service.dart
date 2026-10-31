@@ -685,6 +685,83 @@ class ApiService {
     }
   }
 
+  /// 5. Get Active Staff Duty / Ongoing Camp / Hospital Assignment
+  /// GET /api/v1/staff/active-duty?staff_user_id=...&staff_role=...
+  static Future<Map<String, dynamic>> getActiveStaffDuty({
+    required String staffUserId,
+    required String staffRole,
+  }) async {
+    final params = {
+      'staff_user_id': staffUserId,
+      'staff_role': staffRole,
+    };
+    final uri = Uri.parse('$baseUrl/api/v1/staff/active-duty')
+        .replace(queryParameters: params);
+
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as Map<String, dynamic>?) ?? {};
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load active staff duty',
+      );
+    }
+  }
+
+  /// 6. Record Blood Donation (Org Staff / Hospital Staff)
+  /// POST /api/v1/staff/record-donation
+  static Future<Map<String, dynamic>> recordBloodDonation({
+    required String staffUserId,
+    required String staffRole,
+    required String donorId,
+    int volumeMl = 450,
+    double hemoglobinsLevel = 13.5,
+    String bloodPressure = '120/80',
+    String componentType = 'Whole Blood',
+    String status = 'COMPLETED',
+    String? storageLocation,
+    String? notes,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/v1/staff/record-donation');
+    final payload = {
+      'staff_user_id': staffUserId,
+      'staff_role': staffRole,
+      'donor_id': donorId,
+      'volume_ml': volumeMl,
+      'hemoglobins_level': hemoglobinsLevel,
+      'blood_pressure': bloodPressure,
+      'component_type': componentType,
+      'status': status,
+      if (storageLocation != null && storageLocation.isNotEmpty)
+        'storage_location': storageLocation,
+      if (notes != null && notes.isNotEmpty) 'notes': notes,
+    };
+
+    try {
+      final response = await http
+          .post(
+            uri,
+            headers: _defaultHeaders,
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as Map<String, dynamic>?) ?? {};
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Failed to record blood donation',
+      );
+    }
+  }
 
   static Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic> body;

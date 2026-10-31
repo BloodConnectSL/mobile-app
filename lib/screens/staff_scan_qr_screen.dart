@@ -31,9 +31,16 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
   String? _errorMessage;
   Map<String, dynamic>? _scannedDonor;
 
+  // Active Duty / Facility state
+  bool _isLoadingDuty = false;
+  Map<String, dynamic>? _activeDuty;
+  String? _dutyError;
+
   @override
   void initState() {
     super.initState();
+    _loadActiveDuty();
+
     if (widget.initialIdentifier != null && widget.initialIdentifier!.isNotEmpty) {
       _manualInputController.text = widget.initialIdentifier!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -47,6 +54,50 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     _scannerController.dispose();
     _manualInputController.dispose();
     super.dispose();
+  }
+
+  String get _staffUserId {
+    return widget.staffUserData['id']?.toString() ??
+        widget.staffUserData['user_id']?.toString() ??
+        '';
+  }
+
+  String get _staffRole {
+    return widget.staffUserData['role']?.toString().toUpperCase() ?? 'STAFF';
+  }
+
+  bool get _isOrgStaff {
+    return _staffRole.contains('ORG');
+  }
+
+  Future<void> _loadActiveDuty() async {
+    final staffId = _staffUserId;
+    if (staffId.isEmpty) return;
+
+    setState(() {
+      _isLoadingDuty = true;
+      _dutyError = null;
+    });
+
+    try {
+      final duty = await ApiService.getActiveStaffDuty(
+        staffUserId: staffId,
+        staffRole: _staffRole,
+      );
+      if (mounted) {
+        setState(() {
+          _activeDuty = duty;
+          _isLoadingDuty = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _dutyError = e.toString();
+          _isLoadingDuty = false;
+        });
+      }
+    }
   }
 
   Future<void> _verifyIdentifier(String identifier) async {
@@ -108,52 +159,208 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     _scannerController.start();
   }
 
-  void _checkinDonor() {
+  // ─── Record Blood Donation Bottom Sheet ────────────────────────────────────
+  void _openRecordDonationSheet() {
     if (_scannedDonor == null) return;
-    final name = _scannedDonor!['full_name'] ?? 'Donor';
-    final isEligible = _scannedDonor!['is_eligible'] == true;
+
+    // For Org Staff, check if ongoing camp exists
+    if (_isOrgStaff) {
+      final status = _activeDuty?['status']?.toString().toLowerCase();
+      final campId = _activeDuty?['facility_id']?.toString() ?? '';
+      if (status != 'ongoing' || campId.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
+                SizedBox(width: 8),
+                Text('No Ongoing Camp'),
+              ],
+            ),
+            content: const Text(
+              'You cannot record donations at this time because your organization account is not assigned to an ongoing blood camp in assigned_staff_members.\n\nPlease contact your Organization Administrator.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _RecordDonationModal(
+        staffUserData: widget.staffUserData,
+        scannedDonor: _scannedDonor!,
+        activeDuty: _activeDuty,
+        onSuccess: (donationResult) {
+          Navigator.of(ctx).pop();
+          _showDonationSuccessDialog(donationResult);
+        },
+      ),
+    );
+  }
+
+  void _showDonationSuccessDialog(Map<String, dynamic> donation) {
+    final donorName = donation['donor_name'] ?? _scannedDonor?['full_name'] ?? 'Donor';
+    final vol = donation['volume_ml'] ?? 450;
+    final bloodGroup = donation['blood_group'] ?? _scannedDonor?['blood_group'] ?? '';
+    final isCamp = donation['is_camp'] == true;
+    final facilityName = donation['camp_name'] ??
+        donation['hospital_name'] ??
+        (_activeDuty?['facility_name'] ?? 'Facility');
+    final donationId = donation['donation_id'] ?? '';
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: Row(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.all(24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isEligible ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
-              color: isEligible ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFFDCFCE7),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFF86EFAC), width: 3),
+              ),
+              child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 40),
             ),
-            const SizedBox(width: 8),
-            Text(isEligible ? 'Confirm Check-In' : 'Eligibility Warning'),
+            const SizedBox(height: 16),
+            const Text(
+              'Donation Uploaded!',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Blood donation records successfully committed to database.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 20),
+
+            // Details card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                children: [
+                  _buildReceiptRow('Donor', '$donorName ($bloodGroup)'),
+                  const Divider(height: 16),
+                  _buildReceiptRow('Volume', '$vol mL'),
+                  const Divider(height: 16),
+                  _buildReceiptRow('Facility', facilityName),
+                  const Divider(height: 16),
+                  _buildReceiptRow(
+                    'Entry Mode',
+                    isCamp ? 'isCamp: TRUE' : 'isHospital: TRUE',
+                    highlight: true,
+                  ),
+                  if (donationId.isNotEmpty) ...[
+                    const Divider(height: 16),
+                    _buildReceiptRow(
+                      'Donation ID',
+                      donationId.length > 12
+                          ? '${donationId.substring(0, 8)}...'
+                          : donationId,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Actions
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      _resetScanner();
+                    },
+                    child: const Text(
+                      'Scan Next',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB71C1C),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => StaffDonorHistoryScreen(
+                            staffUserData: widget.staffUserData,
+                            initialSearch: _scannedDonor?['nic'] ?? '',
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'View History',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-        content: Text(
-          isEligible
-              ? 'Check-in $name for today\'s blood donation workflow?'
-              : '$name is currently flagged as deferred. Are you sure staff wants to proceed with medical check-in?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isEligible ? const Color(0xFF16A34A) : const Color(0xFFD97706),
-            ),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Donor $name checked-in successfully!'),
-                  backgroundColor: AppTheme.successGreen,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text('Check-In'),
-          ),
-        ],
       ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value, {bool highlight = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: highlight ? const Color(0xFFB71C1C) : AppTheme.textPrimary,
+          ),
+        ),
+      ],
     );
   }
 
@@ -168,10 +375,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Scan Donor QR',
-          style: TextStyle(
-            fontSize: 18,
+        title: Text(
+          _isOrgStaff ? 'Org Staff: Scan & Record' : 'Hospital Staff: Scan & Record',
+          style: const TextStyle(
+            fontSize: 17,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
           ),
@@ -203,7 +410,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. Scanner View or Result View
+              // 1. Staff Active Duty & Assignment Badge
+              _buildStaffDutyBanner(),
+
+              // 2. Scanner View or Result View
               if (_scannedDonor != null)
                 _buildDonorResultCard(_scannedDonor!)
               else
@@ -211,7 +421,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
 
               const SizedBox(height: 16),
 
-              // 2. Manual Search / ID Input Panel
+              // 3. Manual Search / ID Input Panel
               _buildManualInputPanel(),
 
               const SizedBox(height: 24),
@@ -222,10 +432,146 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     );
   }
 
+  // ─── Active Duty Card ──────────────────────────────────────────────────────
+  Widget _buildStaffDutyBanner() {
+    if (_isLoadingDuty) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(width: 10),
+            Text('Checking duty assignments...', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          ],
+        ),
+      );
+    }
+
+    if (_dutyError != null) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFECACA)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Duty status error: $_dutyError',
+                style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isCamp = _isOrgStaff;
+    final facilityName = _activeDuty?['facility_name'] ?? (isCamp ? 'No ongoing camp assigned' : 'Hospital Blood Bank');
+    final venue = _activeDuty?['venue_or_addr'] ?? '';
+    final status = _activeDuty?['status']?.toString().toLowerCase() ?? 'none';
+    final hasOngoing = status == 'ongoing' || (!isCamp && status == 'active');
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: hasOngoing ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: hasOngoing ? const Color(0xFFBBF7D0) : const Color(0xFFFECACA),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: hasOngoing ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isCamp ? Icons.campaign_rounded : Icons.local_hospital_rounded,
+              color: hasOngoing ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      isCamp ? 'ONGOING BLOOD CAMP' : 'HOSPITAL BLOOD BANK',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: hasOngoing ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: hasOngoing ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isCamp ? (hasOngoing ? 'isCamp: TRUE' : 'NO CAMP') : 'isHospital: TRUE',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  facilityName,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                if (venue.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    venue,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildScannerSection() {
     return Container(
       margin: const EdgeInsets.all(16),
-      height: 320,
+      height: 300,
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(24),
@@ -253,8 +599,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
 
           // Scanner Target Frame Overlay
           Container(
-            width: 220,
-            height: 220,
+            width: 210,
+            height: 210,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 2),
               borderRadius: BorderRadius.circular(20),
@@ -471,6 +817,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ),
           ),
 
+          // Eligibility Banner
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             color: isEligible ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
@@ -487,16 +834,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isEligible ? 'ELIGIBLE TO DONATE' : 'DONATION DEFERRED',
+                        isEligible ? 'ELIGIBLE TO DONATE' : 'DONATION INTERVAL STATUS',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
                           color: isEligible ? const Color(0xFF15803D) : const Color(0xFFB45309),
                         ),
                       ),
                       Text(
-                        eligibilityMsg,
+                        eligibilityMsg.isNotEmpty
+                            ? eligibilityMsg
+                            : (isEligible ? 'Donor meets donation criteria.' : 'Medical check recommended.'),
                         style: TextStyle(
                           fontSize: 12,
                           color: isEligible ? const Color(0xFF166534) : const Color(0xFF92400E),
@@ -554,25 +903,26 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ),
           ),
 
+          // Action Buttons: Primary Record Donation + History
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               children: [
                 SizedBox(
                   width: double.infinity,
-                  height: 48,
+                  height: 52,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB71C1C),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 2,
                     ),
-                    icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
+                    icon: const Icon(Icons.water_drop_rounded, color: Colors.white, size: 22),
                     label: const Text(
-                      'Check-in Donor',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                      'Record Blood Donation',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
-                    onPressed: _checkinDonor,
+                    onPressed: _openRecordDonationSheet,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -794,6 +1144,431 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
         _manualInputController.text = code;
         _verifyIdentifier(code);
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RECORD BLOOD DONATION MODAL FORM
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _RecordDonationModal extends StatefulWidget {
+  final Map<String, dynamic> staffUserData;
+  final Map<String, dynamic> scannedDonor;
+  final Map<String, dynamic>? activeDuty;
+  final void Function(Map<String, dynamic> donationResult) onSuccess;
+
+  const _RecordDonationModal({
+    required this.staffUserData,
+    required this.scannedDonor,
+    required this.activeDuty,
+    required this.onSuccess,
+  });
+
+  @override
+  State<_RecordDonationModal> createState() => _RecordDonationModalState();
+}
+
+class _RecordDonationModalState extends State<_RecordDonationModal> {
+  int _selectedVolume = 450;
+  final TextEditingController _hbController = TextEditingController(text: '13.5');
+  final TextEditingController _bpController = TextEditingController(text: '120/80');
+  final TextEditingController _storageController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+
+  String _componentType = 'Whole Blood';
+  bool _isSubmitting = false;
+  String? _modalError;
+
+  @override
+  void initState() {
+    super.initState();
+    final isCamp = (widget.staffUserData['role']?.toString().toUpperCase() ?? '').contains('ORG');
+    if (isCamp) {
+      _storageController.text = 'Field Cold Box Transport';
+    } else {
+      _storageController.text = 'Hospital Blood Bank Storage';
+    }
+  }
+
+  @override
+  void dispose() {
+    _hbController.dispose();
+    _bpController.dispose();
+    _storageController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  String get _staffUserId {
+    return widget.staffUserData['id']?.toString() ??
+        widget.staffUserData['user_id']?.toString() ??
+        '';
+  }
+
+  String get _staffRole {
+    return widget.staffUserData['role']?.toString().toUpperCase() ?? 'STAFF';
+  }
+
+  bool get _isOrgStaff => _staffRole.contains('ORG');
+
+  Future<void> _submitDonation() async {
+    final donorId = widget.scannedDonor['donor_id']?.toString() ??
+        widget.scannedDonor['id']?.toString() ??
+        '';
+
+    if (donorId.isEmpty) {
+      setState(() => _modalError = 'Invalid donor ID');
+      return;
+    }
+
+    final hb = double.tryParse(_hbController.text.trim()) ?? 13.5;
+    final bp = _bpController.text.trim().isEmpty ? '120/80' : _bpController.text.trim();
+
+    setState(() {
+      _isSubmitting = true;
+      _modalError = null;
+    });
+
+    try {
+      final res = await ApiService.recordBloodDonation(
+        staffUserId: _staffUserId,
+        staffRole: _staffRole,
+        donorId: donorId,
+        volumeMl: _selectedVolume,
+        hemoglobinsLevel: hb,
+        bloodPressure: bp,
+        componentType: _componentType,
+        status: 'COMPLETED',
+        storageLocation: _storageController.text.trim(),
+        notes: _notesController.text.trim(),
+      );
+
+      widget.onSuccess(res);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _modalError = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final donorName = widget.scannedDonor['full_name'] ?? 'Donor';
+    final nic = widget.scannedDonor['nic'] ?? '';
+    final bg = widget.scannedDonor['blood_group'] ?? 'Unknown';
+    final facility = widget.activeDuty?['facility_name'] ?? (_isOrgStaff ? 'Field Camp' : 'Hospital Blood Bank');
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Modal Handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            // Header Banner
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFB71C1C), Color(0xFFD32F2F)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(
+                        bg,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.primaryCrimson,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          donorName,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'NIC: $nic',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _isOrgStaff
+                              ? 'Camp Assignment: $facility (isCamp: true)'
+                              : 'Hospital Duty: $facility (isHospital: true)',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFFFD7D7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_modalError != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFECACA)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _modalError!,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // 1. Volume Section
+                  const Text(
+                    'Collected Blood Volume',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [350, 450, 500].map((vol) {
+                      final isSelected = _selectedVolume == vol;
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ChoiceChip(
+                            label: Text(
+                              '$vol mL',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                              ),
+                            ),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFFB71C1C),
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            onSelected: (val) {
+                              if (val) setState(() => _selectedVolume = vol);
+                            },
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 2. Hemoglobin & Blood Pressure
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Hemoglobin (g/dL)',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _hbController,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.opacity_rounded, size: 18, color: Color(0xFFB71C1C)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Blood Pressure',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _bpController,
+                              decoration: InputDecoration(
+                                hintText: '120/80',
+                                prefixIcon: const Icon(Icons.favorite_rounded, size: 18, color: Color(0xFFB71C1C)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // 3. Component Type
+                  const Text(
+                    'Component Type',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _componentType,
+                        isExpanded: true,
+                        items: ['Whole Blood', 'Red Blood Cells', 'Platelets', 'Plasma'].map((c) {
+                          return DropdownMenuItem(value: c, child: Text(c));
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _componentType = val);
+                        },
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // 4. Storage Location
+                  const Text(
+                    'Storage / Transport Destination',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _storageController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.ac_unit_rounded, size: 18, color: Color(0xFFB71C1C)),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFB71C1C),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                      onPressed: _isSubmitting ? null : _submitDonation,
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Text(
+                              'Confirm & Upload Donation Details',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

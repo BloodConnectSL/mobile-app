@@ -290,3 +290,13 @@ CREATE TABLE public.camp_visit_confirmations (
   CONSTRAINT camp_visit_confirmations_donor_id_fkey FOREIGN KEY (donor_id) REFERENCES public.blood_donors(id),
   CONSTRAINT camp_visit_confirmations_blood_camp_id_fkey FOREIGN KEY (blood_camp_id) REFERENCES public.blood_camps(id)
 );
+CREATE TABLE public.assigned_staff_members (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  camp_id uuid NOT NULL,
+  staff_id uuid NOT NULL,
+  camp_status text NOT NULL DEFAULT 'ongoing',
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT assigned_staff_members_pkey PRIMARY KEY (id),
+  CONSTRAINT assigned_staff_members_camp_id_fkey FOREIGN KEY (camp_id) REFERENCES public.blood_camps(id) ON DELETE CASCADE
+);
