@@ -213,8 +213,10 @@ class SessionService {
 
     switch (rawRole) {
       case 'ORG_ADMIN':
+      case 'ORGANIZATION_ADMIN':
         return OrgAdminDashboardScreen(userData: userData);
       case 'ORG_STAFF':
+      case 'ORGANIZATION_STAFF':
         return OrgStaffDashboardScreen(userData: userData);
       case 'SYSTEM_ADMIN':
         return SystemAdminDashboardScreen(userData: userData);

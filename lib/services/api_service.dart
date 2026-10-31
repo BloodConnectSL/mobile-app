@@ -575,8 +575,117 @@ class ApiService {
     }
   }
 
+  /// ─── Staff Portal Quick Actions ───────────────────────────────────────────
 
-  /// Standard parser matching backend response envelopes
+  /// 1. Scan Donor QR or verify by NIC / ID
+  /// GET /api/v1/staff/scan/:identifier
+  static Future<Map<String, dynamic>> scanDonor(String identifier) async {
+    final cleanId = Uri.encodeComponent(identifier.trim());
+    final uri = Uri.parse('$baseUrl/api/v1/staff/scan/$cleanId');
+
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as Map<String, dynamic>?) ?? {};
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to verify donor barcode/ID',
+      );
+    }
+  }
+
+  /// 2. Get Donor History by search query or donor ID
+  /// GET /api/v1/staff/donor-history?search=...
+  static Future<List<dynamic>> getStaffDonorHistory({
+    String? search,
+    int page = 1,
+    int limit = 30,
+  }) async {
+    final params = <String, String>{
+      'page': page.toString(),
+      'limit': limit.toString(),
+    };
+    if (search != null && search.trim().isNotEmpty) {
+      params['search'] = search.trim();
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/staff/donor-history')
+        .replace(queryParameters: params);
+
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as List<dynamic>?) ?? [];
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load donor history',
+      );
+    }
+  }
+
+  /// 3. Get Staff Summary Reports (units, blood groups, camps)
+  /// GET /api/v1/staff/reports
+  static Future<Map<String, dynamic>> getStaffReports() async {
+    final uri = Uri.parse('$baseUrl/api/v1/staff/reports');
+
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as Map<String, dynamic>?) ?? {};
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load staff reports',
+      );
+    }
+  }
+
+  /// 4. Get Confirmed Donors for Blood Camps / Hospitals
+  /// GET /api/v1/staff/confirmed-donors?camp_id=...&search=...
+  static Future<List<dynamic>> getConfirmedDonors({
+    String? campId,
+    String? search,
+    String? status,
+  }) async {
+    final params = <String, String>{};
+    if (campId != null && campId.isNotEmpty) params['camp_id'] = campId;
+    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
+    if (status != null && status.isNotEmpty) params['status'] = status;
+
+    final uri = Uri.parse('$baseUrl/api/v1/staff/confirmed-donors')
+        .replace(queryParameters: params.isEmpty ? null : params);
+
+    try {
+      final response = await http
+          .get(uri, headers: _defaultHeaders)
+          .timeout(const Duration(seconds: 15));
+
+      final Map<String, dynamic> data = _parseResponse(response);
+      return (data['data'] as List<dynamic>?) ?? [];
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        statusCode: 0,
+        message: 'Network error: Unable to load confirmed donors list',
+      );
+    }
+  }
+
+
   static Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic> body;
     try {

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/session_service.dart';
+import '../theme/app_theme.dart';
+import 'donor_profile_screen.dart';
 import 'login_screen.dart';
+import 'staff_confirmed_donors_screen.dart';
+import 'staff_donor_history_screen.dart';
+import 'staff_reports_screen.dart';
+import 'staff_scan_qr_screen.dart';
 
-class OrgStaffDashboardScreen extends StatelessWidget {
+class OrgStaffDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
   const OrgStaffDashboardScreen({
@@ -11,13 +17,41 @@ class OrgStaffDashboardScreen extends StatelessWidget {
     required this.userData,
   });
 
+  @override
+  State<OrgStaffDashboardScreen> createState() => _OrgStaffDashboardScreenState();
+}
+
+class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
+  late Map<String, dynamic> _userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _userData = Map<String, dynamic>.from(widget.userData);
+  }
+
+  Future<void> _openProfile(BuildContext context) async {
+    final updated = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(
+        builder: (_) => DonorProfileScreen(userData: _userData),
+      ),
+    );
+
+    if (updated != null && mounted) {
+      setState(() {
+        _userData = Map<String, dynamic>.from(updated);
+      });
+      SessionService.updateUserData(_userData);
+    }
+  }
+
   void _handleLogout(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.logout_rounded, color: Color(0xFFD97706)),
+            Icon(Icons.logout_rounded, color: AppTheme.primaryCrimson),
             SizedBox(width: 8),
             Text('Confirm Logout'),
           ],
@@ -30,7 +64,7 @@ class OrgStaffDashboardScreen extends StatelessWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706),
+              backgroundColor: AppTheme.primaryCrimson,
             ),
             onPressed: () async {
               Navigator.of(ctx).pop();
@@ -50,6 +84,7 @@ class OrgStaffDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userData = _userData;
     final username = userData['username'] ?? 'Staff Member';
     final firstName = userData['first_name'] ?? '';
     final lastName = userData['last_name'] ?? '';
@@ -57,6 +92,7 @@ class OrgStaffDashboardScreen extends StatelessWidget {
         ? '$firstName $lastName'.trim()
         : username;
     final phone = userData['phone'] ?? '';
+    final orgName = userData['org_name'] ?? 'Sri Lanka Red Cross Society';
 
     return PopScope(
       canPop: false,
@@ -65,316 +101,480 @@ class OrgStaffDashboardScreen extends StatelessWidget {
         SystemNavigator.pop();
       },
       child: Scaffold(
-      backgroundColor: const Color(0xFFFFFBEB).withAlpha(100),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFD97706),
-        elevation: 0,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Organization Staff Portal',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            Text(
-              'Field Campaign Operations',
-              style: TextStyle(fontSize: 12, color: Colors.white70),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white),
-            tooltip: 'Quick Check-in Scanner',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Opening QR Scanner for Donor Check-in')),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.white),
-            tooltip: 'Log Out',
-            onPressed: () => _handleLogout(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Staff Info Banner
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFD97706), Color(0xFFB45309)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          titleSpacing: 16,
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFB71C1C), Color(0xFFE53935)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryCrimson.withValues(alpha: 0.25),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFD97706).withAlpha(70),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                child: const Icon(
+                  Icons.campaign_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
-              child: Row(
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white.withAlpha(50),
-                    child: const Icon(Icons.badge_rounded, size: 30, color: Colors.white),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Blood',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.primaryCrimson,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const Text(
+                        'Connect',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textPrimary,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          fullName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(50),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'ORG STAFF',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                            if (phone.isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                phone,
-                                style: const TextStyle(fontSize: 12, color: Colors.white70),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
+                  const Text(
+                    'Organization Staff Portal',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],
               ),
+            ],
+          ),
+          centerTitle: false,
+          actions: [
+            IconButton(
+              tooltip: 'My Profile',
+              icon: const Icon(Icons.account_circle_outlined, color: AppTheme.primaryCrimson, size: 28),
+              onPressed: () => _openProfile(context),
             ),
-            const SizedBox(height: 20),
-
-            // Active Campaign Shift Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFDE68A)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(10),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+            IconButton(
+              tooltip: 'Log Out',
+              icon: const Icon(Icons.logout_rounded, color: AppTheme.primaryCrimson),
+              onPressed: () => _handleLogout(context),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. User Greeting Hero Card (Same design as Donor Portal)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFB71C1C), Color(0xFFD32F2F)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFB71C1C).withValues(alpha: 0.22),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.location_on_rounded, color: Color(0xFFD97706), size: 20),
-                          SizedBox(width: 6),
-                          Text(
-                            'Today\'s Assigned Drive',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          CircleAvatar(
+                            radius: 26,
+                            backgroundColor: Colors.white,
+                            child: Text(
+                              username.isNotEmpty ? username[0].toUpperCase() : 'O',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryCrimson,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome back,',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  fullName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '@$username',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'ON DUTY',
-                          style: TextStyle(
-                            color: Color(0xFF92400E),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
+                      const Divider(color: Colors.white24, height: 26),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Contact Phone',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 11,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                phone.isNotEmpty ? phone : 'Unlinked',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'Affiliated Org',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 11,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                orgName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Rotary Colombo Blood Drive 2026',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+
+                const SizedBox(height: 24),
+
+                // 2. Four Quick Actions Section
+                const Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                    letterSpacing: -0.2,
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Public Library Auditorium, Colombo 07 • 08:30 AM - 04:30 PM',
-                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                  const Divider(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _StatColumn(label: 'Registered', value: '84', color: const Color(0xFF2563EB)),
-                      _StatColumn(label: 'Screened', value: '62', color: const Color(0xFFD97706)),
-                      _StatColumn(label: 'Collected Units', value: '48', color: const Color(0xFF059669)),
-                      _StatColumn(label: 'Target', value: '100', color: Colors.grey.shade700),
+                ),
+                const SizedBox(height: 12),
+
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.25,
+                  children: [
+                    // Action 1: Scan QR
+                    _buildQuickActionCard(
+                      icon: Icons.qr_code_scanner_rounded,
+                      title: 'Scan QR',
+                      subtitle: 'Verify donor pass & eligibility',
+                      badgeColor: const Color(0xFFB71C1C),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => StaffScanQrScreen(staffUserData: _userData),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Action 2: Donor History
+                    _buildQuickActionCard(
+                      icon: Icons.history_rounded,
+                      title: 'Donor History',
+                      subtitle: 'Search past donation records',
+                      badgeColor: const Color(0xFF0284C7),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => StaffDonorHistoryScreen(staffUserData: _userData),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Action 3: Report
+                    _buildQuickActionCard(
+                      icon: Icons.bar_chart_rounded,
+                      title: 'Report',
+                      subtitle: 'Turnout & units collected',
+                      badgeColor: const Color(0xFF0F766E),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => StaffReportsScreen(staffUserData: _userData),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Action 4: Confirmed Donors
+                    _buildQuickActionCard(
+                      icon: Icons.how_to_reg_rounded,
+                      title: 'Confirmed Donors',
+                      subtitle: 'Upcoming drive registrations',
+                      badgeColor: const Color(0xFF7C3AED),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => StaffConfirmedDonorsScreen(staffUserData: _userData),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // 3. Organization Field Campaign Operations Card
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.location_on_rounded, color: AppTheme.primaryCrimson, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Field Campaign Shift',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDCFCE7),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'ON DUTY',
+                              style: TextStyle(
+                                color: Color(0xFF15803D),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Rotary & Red Cross Colombo Central Drive',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+                      ),
+                      const SizedBox(height: 3),
+                      const Text(
+                        'Public Library Auditorium, Colombo 07 • 08:30 AM - 04:30 PM',
+                        style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                      ),
+                      const Divider(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildMiniStat(label: 'Registered', value: '84', color: const Color(0xFF2563EB)),
+                          _buildMiniStat(label: 'Screened', value: '62', color: const Color(0xFFD97706)),
+                          _buildMiniStat(label: 'Collected Units', value: '48', color: const Color(0xFF16A34A)),
+                          _buildMiniStat(label: 'Drive Target', value: '100', color: Colors.grey.shade700),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
 
-            // Staff Operational Capabilities
-            const Text(
-              'Field Operational Tasks',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.35,
-              children: [
-                _CapabilityCard(
-                  icon: Icons.qr_code_scanner_rounded,
-                  title: 'Donor Check-In',
-                  subtitle: 'Scan appointment QR or verify NIC',
-                  color: const Color(0xFFD97706),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Launching Donor Check-In Scanner')),
-                    );
-                  },
+                const SizedBox(height: 24),
+
+                // 4. Log Out Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primaryCrimson,
+                      side: const BorderSide(color: Color(0xFFFECACA)),
+                      backgroundColor: const Color(0xFFFEF2F2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    icon: const Icon(Icons.logout_rounded),
+                    label: const Text(
+                      'Log Out of Staff Portal',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    onPressed: () => _handleLogout(context),
+                  ),
                 ),
-                _CapabilityCard(
-                  icon: Icons.how_to_reg_rounded,
-                  title: 'Walk-In Registration',
-                  subtitle: 'Enroll on-site first-time donors',
-                  color: const Color(0xFF059669),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Opening Walk-in Donor Form')),
-                    );
-                  },
-                ),
-                _CapabilityCard(
-                  icon: Icons.bloodtype_outlined,
-                  title: 'Screening & Vitals',
-                  subtitle: 'Record Hb count, BP & weight vitals',
-                  color: const Color(0xFFDC2626),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Opening Donor Screening Checklist')),
-                    );
-                  },
-                ),
-                _CapabilityCard(
-                  icon: Icons.fastfood_outlined,
-                  title: 'Post-Donation Care',
-                  subtitle: 'Refreshments, certificates & badges',
-                  color: const Color(0xFF7C3AED),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Donor Recovery & Certificate dispatch')),
-                    );
-                  },
-                ),
-                _CapabilityCard(
-                  icon: Icons.inventory_outlined,
-                  title: 'Equipment Checklist',
-                  subtitle: 'Blood bags, vacutainers, swabs stock',
-                  color: const Color(0xFF2563EB),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Stock & Consumables Checklist')),
-                    );
-                  },
-                ),
-                _CapabilityCard(
-                  icon: Icons.support_agent_rounded,
-                  title: 'Coordinator Hotline',
-                  subtitle: 'Contact Mobile Blood Bank supervisor',
-                  color: const Color(0xFF0D9488),
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Calling Org Campaign Coordinator')),
-                    );
-                  },
-                ),
+                const SizedBox(height: 24),
               ],
             ),
-            const SizedBox(height: 24),
+          ),
+        ),
+      ),
+    );
+  }
 
-            // Log Out Button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFDC2626),
-                  side: const BorderSide(color: Color(0xFFDC2626)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text(
-                  'Log Out of Staff Portal',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                onPressed: () => _handleLogout(context),
-              ),
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color badgeColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            const SizedBox(height: 20),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: badgeColor, size: 20),
+            ),
+            const Spacer(),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppTheme.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppTheme.textSecondary,
+                height: 1.2,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
-    ),
     );
   }
-}
 
-class _StatColumn extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatColumn({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMiniStat({
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Column(
       children: [
         Text(
@@ -384,72 +584,9 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Colors.black54),
+          style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
         ),
       ],
-    );
-  }
-}
-
-class _CapabilityCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _CapabilityCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: color.withAlpha(30),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const Spacer(),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade600, height: 1.2),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
