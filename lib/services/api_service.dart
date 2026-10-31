@@ -578,10 +578,23 @@ class ApiService {
   /// ─── Staff Portal Quick Actions ───────────────────────────────────────────
 
   /// 1. Scan Donor QR or verify by NIC / ID
-  /// GET /api/v1/staff/scan/:identifier
-  static Future<Map<String, dynamic>> scanDonor(String identifier) async {
+  /// GET /api/v1/staff/scan/:identifier?staff_user_id=...&staff_role=...
+  static Future<Map<String, dynamic>> scanDonor(
+    String identifier, {
+    String? staffUserId,
+    String? staffRole,
+  }) async {
     final cleanId = Uri.encodeComponent(identifier.trim());
-    final uri = Uri.parse('$baseUrl/api/v1/staff/scan/$cleanId');
+    final params = <String, String>{};
+    if (staffUserId != null && staffUserId.isNotEmpty) {
+      params['staff_user_id'] = staffUserId;
+    }
+    if (staffRole != null && staffRole.isNotEmpty) {
+      params['staff_role'] = staffRole;
+    }
+
+    final uri = Uri.parse('$baseUrl/api/v1/staff/scan/$cleanId')
+        .replace(queryParameters: params.isEmpty ? null : params);
 
     try {
       final response = await http

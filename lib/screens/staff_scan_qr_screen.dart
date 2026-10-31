@@ -129,7 +129,11 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     } catch (_) {}
 
     try {
-      final result = await ApiService.scanDonor(clean);
+      final result = await ApiService.scanDonor(
+        clean,
+        staffUserId: _staffUserId,
+        staffRole: _staffRole,
+      );
       if (mounted) {
         setState(() {
           _scannedDonor = result;
@@ -200,6 +204,41 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
   void _openRecordDonationSheet() {
     if (_scannedDonor == null) return;
 
+    // Check if duplicate donation is already recorded
+    if (_scannedDonor!['already_recorded'] == true) {
+      final msg = _scannedDonor!['already_recorded_message']?.toString() ??
+          'Blood donation already recorded from this donor for this camp.';
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_rounded, color: Color(0xFFDC2626)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Donation Already Recorded',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            msg,
+            style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryCrimson)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     // For Org Staff, check if ongoing camp exists
     if (_isOrgStaff) {
       final status = _activeDuty?['status']?.toString().toLowerCase();
@@ -240,6 +279,17 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
         activeDuty: _activeDuty,
         onSuccess: (donationResult) {
           Navigator.of(ctx).pop();
+          if (mounted) {
+            setState(() {
+              if (_scannedDonor != null) {
+                _scannedDonor = Map<String, dynamic>.from(_scannedDonor!)
+                  ..['already_recorded'] = true
+                  ..['already_recorded_message'] = _isOrgStaff
+                      ? 'Blood donation already recorded from this donor for this camp.'
+                      : 'Blood donation already recorded from this donor for today.';
+              }
+            });
+          }
           _showDonationSuccessDialog(donationResult);
         },
       ),
@@ -806,6 +856,11 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     final qrRef = donor['qr_ref_id'] ?? '';
     final isEligible = donor['is_eligible'] == true;
     final eligibilityMsg = donor['eligibility_message'] ?? '';
+    final isAlreadyRecorded = donor['already_recorded'] == true;
+    final alreadyRecordedMsg = donor['already_recorded_message']?.toString() ??
+        (_isOrgStaff
+            ? 'Blood donation already recorded from this donor for this camp.'
+            : 'Blood donation already recorded from this donor today.');
     final lastDonation = donor['last_donation_date'] != null
         ? DateFormat('yyyy-MM-dd').format(DateTime.parse(donor['last_donation_date']))
         : 'Never Donated';
@@ -958,6 +1013,56 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ),
           ),
 
+          // Already Recorded Banner (Prominent Alert)
+          if (isAlreadyRecorded)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEE2E2),
+                border: Border(
+                  top: BorderSide(color: Color(0xFFFECACA), width: 1),
+                  bottom: BorderSide(color: Color(0xFFFECACA), width: 1),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.lock_clock_rounded,
+                    color: Color(0xFFDC2626),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'DONATION ALREADY RECORDED',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                            color: Color(0xFFB91C1C),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          alreadyRecordedMsg,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF991B1B),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -1015,14 +1120,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                   height: 52,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB71C1C),
+                      backgroundColor: isAlreadyRecorded ? const Color(0xFF94A3B8) : const Color(0xFFB71C1C),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 2,
+                      elevation: isAlreadyRecorded ? 0 : 2,
                     ),
-                    icon: const Icon(Icons.water_drop_rounded, color: Colors.white, size: 22),
-                    label: const Text(
-                      'Record Blood Donation',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    icon: Icon(
+                      isAlreadyRecorded ? Icons.lock_rounded : Icons.water_drop_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                    label: Text(
+                      isAlreadyRecorded ? 'Donation Already Recorded' : 'Record Blood Donation',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     onPressed: _openRecordDonationSheet,
                   ),
