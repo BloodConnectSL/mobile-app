@@ -612,12 +612,15 @@ class ApiService {
     }
   }
 
-  /// 2. Get Donor History by search query or donor ID
-  /// GET /api/v1/staff/donor-history?search=...
-  static Future<List<dynamic>> getStaffDonorHistory({
+  /// 2. Get Donor History by universal search, date filter, and pagination
+  /// GET /api/v1/staff/donor-history?search=...&date=...&page=...&limit=...
+  static Future<Map<String, dynamic>> getStaffDonorHistory({
     String? search,
+    String? date,
     int page = 1,
-    int limit = 30,
+    int limit = 15,
+    String? staffUserId,
+    String? staffRole,
   }) async {
     final params = <String, String>{
       'page': page.toString(),
@@ -625,6 +628,15 @@ class ApiService {
     };
     if (search != null && search.trim().isNotEmpty) {
       params['search'] = search.trim();
+    }
+    if (date != null && date.trim().isNotEmpty) {
+      params['date'] = date.trim();
+    }
+    if (staffUserId != null && staffUserId.trim().isNotEmpty) {
+      params['staff_user_id'] = staffUserId.trim();
+    }
+    if (staffRole != null && staffRole.trim().isNotEmpty) {
+      params['staff_role'] = staffRole.trim();
     }
 
     final uri = Uri.parse('$baseUrl/api/v1/staff/donor-history')
@@ -636,7 +648,17 @@ class ApiService {
           .timeout(const Duration(seconds: 15));
 
       final Map<String, dynamic> data = _parseResponse(response);
-      return (data['data'] as List<dynamic>?) ?? [];
+      final items = (data['data'] as List<dynamic>?) ?? [];
+      final total = (data['total'] as num?)?.toInt() ?? items.length;
+      final curPage = (data['page'] as num?)?.toInt() ?? page;
+      final curLimit = (data['limit'] as num?)?.toInt() ?? limit;
+
+      return {
+        'items': items,
+        'total': total,
+        'page': curPage,
+        'limit': curLimit,
+      };
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException(

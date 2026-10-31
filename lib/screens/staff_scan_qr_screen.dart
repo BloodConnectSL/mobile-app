@@ -239,6 +239,41 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
       return;
     }
 
+    // Check if donor is ineligible (minimum donation interval not met)
+    if (_scannedDonor!['is_eligible'] == false) {
+      final msg = _scannedDonor!['eligibility_message']?.toString() ??
+          'Donor does not meet the minimum donation interval criteria.';
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.block_rounded, color: Color(0xFFDC2626)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Donor Ineligible',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Blood donation recording is locked for this donor.\n\n$msg\n\nRecording donations before the required recovery period is restricted to safeguard donor health.',
+            style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryCrimson)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     // For Org Staff, check if ongoing camp exists
     if (_isOrgStaff) {
       final status = _activeDuty?['status']?.toString().toLowerCase();
@@ -1128,26 +1163,38 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isAlreadyRecorded ? const Color(0xFF94A3B8) : const Color(0xFFB71C1C),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: isAlreadyRecorded ? 0 : 2,
-                    ),
-                    icon: Icon(
-                      isAlreadyRecorded ? Icons.lock_rounded : Icons.water_drop_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                    label: Text(
-                      isAlreadyRecorded ? 'Donation Already Recorded' : 'Record Blood Donation',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    onPressed: _openRecordDonationSheet,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final isLocked = isAlreadyRecorded || !isEligible;
+                    String btnText = 'Record Blood Donation';
+                    IconData btnIcon = Icons.water_drop_rounded;
+
+                    if (isAlreadyRecorded) {
+                      btnText = 'Donation Already Recorded';
+                      btnIcon = Icons.lock_rounded;
+                    } else if (!isEligible) {
+                      btnText = 'Donor Ineligible (Interval Active)';
+                      btnIcon = Icons.block_rounded;
+                    }
+
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isLocked ? const Color(0xFF94A3B8) : const Color(0xFFB71C1C),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: isLocked ? 0 : 2,
+                        ),
+                        icon: Icon(btnIcon, color: Colors.white, size: 22),
+                        label: Text(
+                          btnText,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        onPressed: _openRecordDonationSheet,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 10),
                 Row(
