@@ -8,6 +8,8 @@ import 'package:mobile_app/screens/main_layout.dart';
 import 'package:mobile_app/screens/portals/all_portals.dart';
 import 'package:mobile_app/screens/blood_request_screen.dart';
 import 'package:mobile_app/screens/donation_history_screen.dart';
+import 'package:mobile_app/screens/notifications_screen.dart';
+import 'package:mobile_app/screens/emergency_sos_screen.dart';
 
 void main() {
   runApp(const PranaApp());
@@ -35,6 +37,8 @@ class PranaApp extends StatelessWidget {
         '/portal/super_admin': (context) => const SuperAdminPortalScreen(),
         '/blood-request': (context) => const BloodRequestScreen(),
         '/donation-history': (context) => const DonationHistoryScreen(),
+        '/notifications': (context) => const NotificationsScreen(),
+        '/emergency-sos': (context) => const EmergencySOSScreen(),
       },
     );
   }
