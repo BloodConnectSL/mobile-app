@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:mobile_app/theme.dart';
 import 'package:mobile_app/screens/splash_screen.dart';
 import 'package:mobile_app/screens/onboarding_screen.dart';
@@ -10,6 +10,7 @@ import 'package:mobile_app/screens/blood_request_screen.dart';
 import 'package:mobile_app/screens/donation_history_screen.dart';
 import 'package:mobile_app/screens/notifications_screen.dart';
 import 'package:mobile_app/screens/emergency_sos_screen.dart';
+import 'package:mobile_app/screens/leaderboard_screen.dart';
 
 void main() {
   runApp(const PranaApp());
@@ -21,7 +22,7 @@ class PranaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Prana (à¶´à·Šâ€à¶»à·à¶«)',
+      title: 'Prana (ප්‍රාණ)',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: '/',
@@ -39,6 +40,7 @@ class PranaApp extends StatelessWidget {
         '/donation-history': (context) => const DonationHistoryScreen(),
         '/notifications': (context) => const NotificationsScreen(),
         '/emergency-sos': (context) => const EmergencySOSScreen(),
+        '/leaderboard': (context) => const LeaderboardScreen(),
       },
     );
   }
