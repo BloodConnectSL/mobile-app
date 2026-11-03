@@ -45,7 +45,9 @@ class RegistrationPendingScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.warningAmber.withValues(alpha: 0.18),
+                            color: AppTheme.warningAmber.withValues(
+                              alpha: 0.18,
+                            ),
                             blurRadius: 28,
                             offset: const Offset(0, 10),
                           ),
@@ -64,7 +66,7 @@ class RegistrationPendingScreen extends StatelessWidget {
 
               // Header
               const Text(
-                'Registration Submitted!',
+                'Account created!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 26,
@@ -77,7 +79,7 @@ class RegistrationPendingScreen extends StatelessWidget {
 
               // Body Message
               const Text(
-                'Your donor profile has been recorded. For safety and verification, system administrators or hospital coordinators must review and activate your account before you can log in.',
+                'Your phone has been verified and your account is ready. Sign in to complete your donor profile and discover upcoming camps.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
@@ -94,7 +96,10 @@ class RegistrationPendingScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.backgroundLight,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppTheme.borderSubtle, width: 1.2),
+                    border: Border.all(
+                      color: AppTheme.borderSubtle,
+                      width: 1.2,
+                    ),
                   ),
                   child: Column(
                     children: [

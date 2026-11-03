@@ -14,7 +14,8 @@ class StaffDonorHistoryScreen extends StatefulWidget {
   });
 
   @override
-  State<StaffDonorHistoryScreen> createState() => _StaffDonorHistoryScreenState();
+  State<StaffDonorHistoryScreen> createState() =>
+      _StaffDonorHistoryScreenState();
 }
 
 class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
@@ -118,7 +119,11 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
     if (preset == 'today') {
       dt = DateTime(now.year, now.month, now.day);
     } else if (preset == 'yesterday') {
-      dt = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 1));
+      dt = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(const Duration(days: 1));
     } else if (preset == 'all') {
       dt = null;
     }
@@ -202,15 +207,23 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
     try {
       final parts = dayKey.split('-');
       if (parts.length == 3) {
-        final target = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        final target = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
         final yesterday = today.subtract(const Duration(days: 1));
 
         final formattedDate = DateFormat('EEEE, MMM dd, yyyy').format(target);
-        if (target.year == today.year && target.month == today.month && target.day == today.day) {
+        if (target.year == today.year &&
+            target.month == today.month &&
+            target.day == today.day) {
           return 'Today • $formattedDate';
-        } else if (target.year == yesterday.year && target.month == yesterday.month && target.day == yesterday.day) {
+        } else if (target.year == yesterday.year &&
+            target.month == yesterday.month &&
+            target.day == yesterday.day) {
           return 'Yesterday • $formattedDate';
         } else {
           return formattedDate;
@@ -231,7 +244,11 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
@@ -244,7 +261,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryCrimson),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppTheme.primaryCrimson,
+            ),
             onPressed: () => _fetchDonationHistory(page: _currentPage),
           ),
         ],
@@ -258,16 +278,21 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
             // 2. Donation Records Grouped Day by Day
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryCrimson))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.primaryCrimson,
+                      ),
+                    )
                   : _errorMessage != null
-                      ? _buildErrorView()
-                      : _donations.isEmpty
-                          ? _buildEmptyView()
-                          : RefreshIndicator(
-                              color: AppTheme.primaryCrimson,
-                              onRefresh: () => _fetchDonationHistory(page: _currentPage),
-                              child: _buildGroupedListView(),
-                            ),
+                  ? _buildErrorView()
+                  : _donations.isEmpty
+                  ? _buildEmptyView()
+                  : RefreshIndicator(
+                      color: AppTheme.primaryCrimson,
+                      onRefresh: () =>
+                          _fetchDonationHistory(page: _currentPage),
+                      child: _buildGroupedListView(),
+                    ),
             ),
 
             // 3. Pagination Controls
@@ -292,11 +317,21 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
               hintText: 'Search by Pass ID (bcnt006), NIC, Name, or Date...',
-              hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-              prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryCrimson),
+              hintStyle: const TextStyle(
+                fontSize: 13,
+                color: AppTheme.textSecondary,
+              ),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                color: AppTheme.primaryCrimson,
+              ),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, color: AppTheme.textSecondary, size: 20),
+                      icon: const Icon(
+                        Icons.clear_rounded,
+                        color: AppTheme.textSecondary,
+                        size: 20,
+                      ),
                       onPressed: () {
                         _searchController.clear();
                         _fetchDonationHistory(page: 1);
@@ -305,7 +340,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                   : null,
               filled: true,
               fillColor: const Color(0xFFF1F5F9),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
@@ -352,16 +390,30 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                     onTap: () => _setDatePreset('all'),
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEE2E2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.close_rounded, size: 14, color: AppTheme.primaryCrimson),
+                          Icon(
+                            Icons.close_rounded,
+                            size: 14,
+                            color: AppTheme.primaryCrimson,
+                          ),
                           SizedBox(width: 4),
-                          Text('Reset Date', style: TextStyle(fontSize: 11, color: AppTheme.primaryCrimson, fontWeight: FontWeight.bold)),
+                          Text(
+                            'Reset Date',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.primaryCrimson,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -397,7 +449,11 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (isCalendar && !isActive) ...[
-              const Icon(Icons.calendar_today_rounded, size: 13, color: AppTheme.textSecondary),
+              const Icon(
+                Icons.calendar_today_rounded,
+                size: 13,
+                color: AppTheme.textSecondary,
+              ),
               const SizedBox(width: 6),
             ],
             Text(
@@ -464,7 +520,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEEF2F6),
                       borderRadius: BorderRadius.circular(12),
@@ -578,12 +637,18 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                           children: [
                             Text(
                               'NIC: $nic',
-                              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary,
+                              ),
                             ),
                             if (qrRef.isNotEmpty) ...[
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFE0E7FF),
                                   borderRadius: BorderRadius.circular(6),
@@ -604,7 +669,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
@@ -658,11 +726,18 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.access_time_rounded, size: 14, color: AppTheme.textSecondary),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 14,
+                        color: AppTheme.textSecondary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         timeStr.isNotEmpty ? timeStr : 'Recorded',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -680,7 +755,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
               if (hb != null && hb > 0 || (bp is String && bp.isNotEmpty)) ...[
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(8),
@@ -688,20 +766,36 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                   child: Row(
                     children: [
                       if (hb != null && hb > 0) ...[
-                        const Icon(Icons.biotech_rounded, size: 14, color: Color(0xFF0284C7)),
+                        const Icon(
+                          Icons.biotech_rounded,
+                          size: 14,
+                          color: Color(0xFF0284C7),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Hb: $hb g/dL',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0369A1)),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF0369A1),
+                          ),
                         ),
                         const SizedBox(width: 14),
                       ],
                       if (bp is String && bp.isNotEmpty) ...[
-                        const Icon(Icons.monitor_heart_rounded, size: 14, color: Color(0xFFE11D48)),
+                        const Icon(
+                          Icons.monitor_heart_rounded,
+                          size: 14,
+                          color: Color(0xFFE11D48),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'BP: $bp',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFBE123C)),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFBE123C),
+                          ),
                         ),
                       ],
                     ],
@@ -718,7 +812,9 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
   // ─── Pagination Bar ────────────────────────────────────────────────────────
   Widget _buildPaginationBar() {
     final start = (_currentPage - 1) * _pageSize + 1;
-    final end = (_currentPage * _pageSize) > _totalCount ? _totalCount : (_currentPage * _pageSize);
+    final end = (_currentPage * _pageSize) > _totalCount
+        ? _totalCount
+        : (_currentPage * _pageSize);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -744,10 +840,17 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
             children: [
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   side: BorderSide(
-                    color: _currentPage > 1 ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0),
+                    color: _currentPage > 1
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFFE2E8F0),
                   ),
                 ),
                 onPressed: _currentPage > 1
@@ -758,7 +861,9 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                     Icon(
                       Icons.chevron_left_rounded,
                       size: 18,
-                      color: _currentPage > 1 ? AppTheme.textPrimary : Colors.grey.shade400,
+                      color: _currentPage > 1
+                          ? AppTheme.textPrimary
+                          : Colors.grey.shade400,
                     ),
                     const SizedBox(width: 2),
                     Text(
@@ -766,7 +871,9 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: _currentPage > 1 ? AppTheme.textPrimary : Colors.grey.shade400,
+                        color: _currentPage > 1
+                            ? AppTheme.textPrimary
+                            : Colors.grey.shade400,
                       ),
                     ),
                   ],
@@ -774,7 +881,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(10),
@@ -791,10 +901,17 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
               const SizedBox(width: 8),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   side: BorderSide(
-                    color: _currentPage < _totalPages ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0),
+                    color: _currentPage < _totalPages
+                        ? const Color(0xFFCBD5E1)
+                        : const Color(0xFFE2E8F0),
                   ),
                 ),
                 onPressed: _currentPage < _totalPages
@@ -807,14 +924,18 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: _currentPage < _totalPages ? AppTheme.textPrimary : Colors.grey.shade400,
+                        color: _currentPage < _totalPages
+                            ? AppTheme.textPrimary
+                            : Colors.grey.shade400,
                       ),
                     ),
                     const SizedBox(width: 2),
                     Icon(
                       Icons.chevron_right_rounded,
                       size: 18,
-                      color: _currentPage < _totalPages ? AppTheme.textPrimary : Colors.grey.shade400,
+                      color: _currentPage < _totalPages
+                          ? AppTheme.textPrimary
+                          : Colors.grey.shade400,
                     ),
                   ],
                 ),
@@ -884,7 +1005,11 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                   backgroundColor: const Color(0xFFFEE2E2),
                   child: Text(
                     bg,
-                    style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.primaryCrimson, fontSize: 18),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.primaryCrimson,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -894,12 +1019,19 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                     children: [
                       Text(
                         donorName,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'NIC: $nic ${qrRef.isNotEmpty ? '• Pass ID: $qrRef' : ''}',
-                        style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -924,7 +1056,10 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                   const Divider(height: 14),
                   _buildReceiptRow('Blood Pressure', bp.toString()),
                   const Divider(height: 14),
-                  _buildReceiptRow('Hemoglobin (Hb)', hb != null ? '$hb g/dL' : '13.5 g/dL'),
+                  _buildReceiptRow(
+                    'Hemoglobin (Hb)',
+                    hb != null ? '$hb g/dL' : '13.5 g/dL',
+                  ),
                   const Divider(height: 14),
                   _buildReceiptRow('Status', status),
                   if (phone.isNotEmpty) ...[
@@ -933,7 +1068,12 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
                   ],
                   if (donId.isNotEmpty) ...[
                     const Divider(height: 14),
-                    _buildReceiptRow('Donation ID', donId.length > 16 ? '${donId.substring(0, 12)}...' : donId),
+                    _buildReceiptRow(
+                      'Donation ID',
+                      donId.length > 16
+                          ? '${donId.substring(0, 12)}...'
+                          : donId,
+                    ),
                   ],
                 ],
               ),
@@ -944,10 +1084,18 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryCrimson,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Close', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -960,12 +1108,19 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+        ),
         Flexible(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
           ),
         ),
       ],
@@ -982,12 +1137,20 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
             const CircleAvatar(
               radius: 36,
               backgroundColor: Color(0xFFFEE2E2),
-              child: Icon(Icons.search_off_rounded, size: 36, color: AppTheme.primaryCrimson),
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 36,
+                color: AppTheme.primaryCrimson,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
               'No Donation Records Found',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
             ),
             const SizedBox(height: 6),
             const Text(
@@ -1016,7 +1179,11 @@ class _StaffDonorHistoryScreenState extends State<StaffDonorHistoryScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off_rounded, size: 48, color: Color(0xFFDC2626)),
+            const Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: Color(0xFFDC2626),
+            ),
             const SizedBox(height: 12),
             Text(
               _errorMessage ?? 'Failed to load records',

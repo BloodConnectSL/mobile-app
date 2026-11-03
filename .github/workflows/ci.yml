@@ -1,22 +1,18 @@
-# Change made by: Nipuna Lakruwan
-# Date: 2026-08-01
-# Added: Flutter CI/CD Pipeline
-name: Flutter CI
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
+name: Flutter verification
+on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-    - run: flutter pub get
-    - run: flutter analyze
-    - run: flutter test
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.8'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build web --no-wasm-dry-run

@@ -1,3 +1,4 @@
+import '../widgets/prana_logo.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
@@ -56,7 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
       final rawRole = (data['role'] as String? ?? '').toUpperCase().trim();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Login successful! Role: ${rawRole.isNotEmpty ? rawRole : 'DONOR'}'),
+          content: Text(
+            'Login successful! Role: ${rawRole.isNotEmpty ? rawRole : 'DONOR'}',
+          ),
           backgroundColor: AppTheme.successGreen,
           behavior: SnackBarBehavior.floating,
         ),
@@ -64,9 +67,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final destination = SessionService.getDestinationScreen(data);
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => destination),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
     } on ApiException catch (e) {
       if (!mounted) return;
       if (e.isPendingApproval) {
@@ -123,8 +126,22 @@ class _LoginScreenState extends State<LoginScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              ApiService.setCustomBaseUrl(controller.text.trim());
+            onPressed: () async {
+              try {
+                await ApiService.setCustomBaseUrl(controller.text.trim());
+              } catch (_) {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Enter a valid server URL including http:// or https://',
+                      ),
+                    ),
+                  );
+                }
+                return;
+              }
+              if (!ctx.mounted || !mounted) return;
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -149,7 +166,10 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: AppTheme.textSecondary),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: AppTheme.textSecondary,
+            ),
             tooltip: 'Configure Backend URL',
             onPressed: _showServerConfigDialog,
           ),
@@ -178,17 +198,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 1.5,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.water_drop_rounded,
-                      size: 42,
-                      color: AppTheme.primaryCrimson,
-                    ),
+                    child: const PranaLogo(size: 72),
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 const Text(
-                  'Welcome to BloodConnectSL',
+                  'Welcome to Prana',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
@@ -199,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'Sign in with your verified phone number to manage your donor profile.',
+                  'Sign in with your NIC or staff account.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -216,7 +232,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: BoxDecoration(
                       color: AppTheme.warningBackground,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.warningAmber, width: 1.2),
+                      border: Border.all(
+                        color: AppTheme.warningAmber,
+                        width: 1.2,
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,13 +302,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _usernameController,
                   keyboardType: TextInputType.text,
                   decoration: const InputDecoration(
-                    labelText: 'Username',
+                    labelText: 'NIC / staff username',
                     hintText: 'Enter your username',
-                    prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryCrimson),
+                    prefixIcon: Icon(
+                      Icons.person_outline,
+                      color: AppTheme.primaryCrimson,
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your username';
+                      return 'Please enter your NIC or staff username';
                     }
                     if (value.trim().length < 3) {
                       return 'Must be at least 3 characters';
@@ -306,7 +328,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     hintText: 'Enter your password',
-                    prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primaryCrimson),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: AppTheme.primaryCrimson,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -339,7 +364,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text('Login'),
@@ -361,7 +388,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => const DonorRegistrationScreen(),
+                            builder: (context) =>
+                                const DonorRegistrationScreen(),
                           ),
                         );
                       },

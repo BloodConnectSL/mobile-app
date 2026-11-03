@@ -1,7 +1,10 @@
+import '../screens/doctor_screen.dart';
+import '../screens/management_screen.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'auth_store.dart';
+import 'api_service.dart';
 import '../screens/donor_dashboard_screen.dart';
 import '../screens/donor_onboarding_wizard_screen.dart';
 import '../screens/hospital_admin_dashboard_screen.dart';
@@ -9,6 +12,7 @@ import '../screens/hospital_staff_dashboard_screen.dart';
 import '../screens/org_admin_dashboard_screen.dart';
 import '../screens/org_staff_dashboard_screen.dart';
 import '../screens/system_admin_dashboard_screen.dart';
+import '../screens/login_screen.dart';
 
 /// Manages 24-hour auto-login session persistence across app restarts.
 class SessionService {
@@ -18,175 +22,102 @@ class SessionService {
 
   // In-memory cache
   static Map<String, dynamic>? _cachedSession;
-  static int? _cachedTimestamp;
 
-  /// Pure-Dart filesystem backup file location on Android internal storage
-  static File? _getBackupFile() {
-    try {
-      if (Platform.isAndroid) {
-        final d1 = Directory('/data/user/0/com.bloodconnectsl.blood_connect_sl/files');
-        if (!d1.existsSync()) {
-          d1.createSync(recursive: true);
-        }
-        return File('${d1.path}/bloodconnect_session_backup.json');
-      }
-    } catch (e) {
-      debugPrint('[SessionService] Backup file path check: $e');
-    }
-    return null;
-  }
+  static const _storage = FlutterSecureStorage();
 
-  /// Saves the user session along with the current timestamp
   static Future<void> saveSession(Map<String, dynamic> userData) async {
-    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final token = userData['token']?.toString();
+    if (token == null || token.isEmpty) {
+      throw StateError('No authentication token was returned');
+    }
+    final now = DateTime.now().millisecondsSinceEpoch;
     _cachedSession = Map<String, dynamic>.from(userData);
-    _cachedTimestamp = nowMs;
 
-    final jsonStr = jsonEncode(userData);
-
-    // 1. Save to SharedPreferences
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyUserData, jsonStr);
-      await prefs.setInt(_keyLoginTimestamp, nowMs);
-      debugPrint('[SessionService] Session saved to SharedPreferences');
-    } catch (e) {
-      debugPrint('[SessionService] SharedPreferences save error: $e');
-    }
-
-    // 2. Save to filesystem backup file as a secondary fallback
-    try {
-      final file = _getBackupFile();
-      if (file != null) {
-        final payload = jsonEncode({
-          'timestamp': nowMs,
-          'userData': userData,
-        });
-        await file.writeAsString(payload, flush: true);
-        debugPrint('[SessionService] Session backup written to ${file.path}');
-      }
-    } catch (e) {
-      debugPrint('[SessionService] Filesystem backup save error: $e');
-    }
+    AuthStore.token = token;
+    await _storage.write(key: _keyUserData, value: jsonEncode(userData));
+    await _storage.write(key: _keyLoginTimestamp, value: now.toString());
   }
 
-  /// Updates existing stored user data without resetting the original login timestamp
   static Future<void> updateUserData(Map<String, dynamic> updatedData) async {
-    _cachedSession = Map<String, dynamic>.from(updatedData);
-    final jsonStr = jsonEncode(updatedData);
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyUserData, jsonStr);
-    } catch (e) {
-      debugPrint('[SessionService] SharedPreferences update error: $e');
-    }
-
-    try {
-      final file = _getBackupFile();
-      if (file != null && _cachedTimestamp != null) {
-        final payload = jsonEncode({
-          'timestamp': _cachedTimestamp,
-          'userData': updatedData,
-        });
-        await file.writeAsString(payload, flush: true);
-      }
-    } catch (_) {}
+    final merged = {...?_cachedSession, ...updatedData};
+    if (AuthStore.token != null) merged['token'] = AuthStore.token;
+    _cachedSession = merged;
+    await _storage.write(key: _keyUserData, value: jsonEncode(merged));
   }
 
-  /// Retrieves the active session if it exists and is less than 24 hours old.
-  /// If expired, invalid, or absent, clears the session and returns null.
   static Future<Map<String, dynamic>?> getActiveSession() async {
-    if (_cachedSession != null && _cachedTimestamp != null) {
-      final elapsed = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(_cachedTimestamp!));
-      if (elapsed <= sessionValidity && !elapsed.isNegative) {
-        debugPrint('[SessionService] Returning in-memory active session');
-        return _cachedSession;
-      }
-    }
-
-    int? timestamp;
-    Map<String, dynamic>? sessionData;
-
-    // 1. Try reading from SharedPreferences
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final jsonStr = prefs.getString(_keyUserData);
-      timestamp = prefs.getInt(_keyLoginTimestamp);
-
-      if (jsonStr != null && timestamp != null) {
-        final decoded = jsonDecode(jsonStr);
-        if (decoded is Map) {
-          sessionData = Map<String, dynamic>.from(decoded);
-          debugPrint('[SessionService] Session recovered from SharedPreferences');
-        }
+      final raw = await _storage
+          .read(key: _keyUserData)
+          .timeout(const Duration(seconds: 5));
+      final timestamp = int.tryParse(
+        await _storage
+                .read(key: _keyLoginTimestamp)
+                .timeout(const Duration(seconds: 5)) ??
+            '',
+      );
+      if (raw == null || timestamp == null) return null;
+      final data = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+      final token = data['token']?.toString();
+      final elapsed = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(timestamp),
+      );
+      if (token == null || elapsed.isNegative || elapsed >= sessionValidity) {
+        await clearSession(revoke: false);
+        return null;
       }
-    } catch (e) {
-      debugPrint('[SessionService] SharedPreferences read error: $e');
-    }
-
-    // 2. Fallback to filesystem backup if SharedPreferences was empty or errored
-    if (sessionData == null || timestamp == null) {
-      try {
-        final file = _getBackupFile();
-        if (file != null && await file.exists()) {
-          final content = await file.readAsString();
-          final decoded = jsonDecode(content);
-          if (decoded is Map && decoded['userData'] is Map && decoded['timestamp'] is int) {
-            timestamp = decoded['timestamp'] as int;
-            sessionData = Map<String, dynamic>.from(decoded['userData'] as Map);
-            debugPrint('[SessionService] Session recovered from disk backup file');
-          }
-        }
-      } catch (e) {
-        debugPrint('[SessionService] Filesystem backup read error: $e');
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        await clearSession(revoke: false);
+        return null;
       }
-    }
-
-    if (sessionData == null || timestamp == null) {
-      debugPrint('[SessionService] No stored session found');
+      final claims =
+          jsonDecode(
+                utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+              )
+              as Map;
+      final exp = claims['exp'] as num?;
+      if (exp == null || DateTime.now().millisecondsSinceEpoch >= exp * 1000) {
+        await clearSession(revoke: false);
+        return null;
+      }
+      AuthStore.token = token;
+      // The API validates signature, account status, membership and token revocation.
+      final current = await ApiService.getCurrentUser();
+      final fresh = Map<String, dynamic>.from(current['user'] as Map);
+      final merged = {
+        ...data,
+        ...fresh,
+        'user_id': fresh['id'],
+        'token': token,
+      };
+      _cachedSession = merged;
+      return merged;
+    } catch (_) {
+      await clearSession(revoke: false);
       return null;
     }
-
-    // 3. Check 24-hour expiration
-    final loginTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    final now = DateTime.now();
-    final elapsed = now.difference(loginTime);
-
-    if (elapsed > sessionValidity || elapsed.isNegative) {
-      debugPrint('[SessionService] Session expired (${elapsed.inHours}h old > 24h limit). Clearing.');
-      await clearSession();
-      return null;
-    }
-
-    debugPrint('[SessionService] Active session valid for ${sessionData['username'] ?? 'user'} (Remaining: ${24 - elapsed.inHours}h)');
-    _cachedSession = sessionData;
-    _cachedTimestamp = timestamp;
-    return sessionData;
   }
 
-  /// Clears the saved session on explicit logout or session expiration
-  static Future<void> clearSession() async {
-    _cachedSession = null;
-    _cachedTimestamp = null;
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_keyUserData);
-      await prefs.remove(_keyLoginTimestamp);
-      debugPrint('[SessionService] SharedPreferences session cleared');
-    } catch (e) {
-      debugPrint('[SessionService] SharedPreferences clear error: $e');
-    }
-
-    try {
-      final file = _getBackupFile();
-      if (file != null && await file.exists()) {
-        await file.delete();
-        debugPrint('[SessionService] Backup session file deleted');
+  static Future<void> clearSession({bool revoke = true}) async {
+    if (revoke && AuthStore.token != null) {
+      try {
+        await ApiService.logout();
+      } catch (_) {
+        /* Local credentials must still be cleared offline. */
       }
-    } catch (e) {
-      debugPrint('[SessionService] File delete error: $e');
+    }
+    AuthStore.token = null;
+    _cachedSession = null;
+    try {
+      await _storage
+          .delete(key: _keyUserData)
+          .timeout(const Duration(seconds: 5));
+      await _storage
+          .delete(key: _keyLoginTimestamp)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Storage can be unavailable in a browser; in-memory access is already revoked.
     }
   }
 
@@ -212,6 +143,10 @@ class SessionService {
     }
 
     switch (rawRole) {
+      case 'DOCTOR':
+        return const DoctorScreen();
+      case 'PLATFORM_ADMIN':
+        return ManagementScreen(userData: userData);
       case 'ORG_ADMIN':
       case 'ORGANIZATION_ADMIN':
         return OrgAdminDashboardScreen(userData: userData);
@@ -225,8 +160,9 @@ class SessionService {
       case 'HOSPITAL_STAFF':
         return HospitalStaffDashboardScreen(userData: userData);
       case 'DONOR':
-      default:
         return DonorDashboardScreen(userData: userData);
+      default:
+        return const LoginScreen();
     }
   }
 }

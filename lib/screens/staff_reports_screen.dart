@@ -5,10 +5,7 @@ import '../theme/app_theme.dart';
 class StaffReportsScreen extends StatefulWidget {
   final Map<String, dynamic> staffUserData;
 
-  const StaffReportsScreen({
-    super.key,
-    required this.staffUserData,
-  });
+  const StaffReportsScreen({super.key, required this.staffUserData});
 
   @override
   State<StaffReportsScreen> createState() => _StaffReportsScreenState();
@@ -49,7 +46,8 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Could not load staff report. Please check connection and retry.';
+          _errorMessage =
+              'Could not load staff report. Please check connection and retry.';
           _isLoading = false;
         });
       }
@@ -64,7 +62,11 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
@@ -77,43 +79,50 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryCrimson),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppTheme.primaryCrimson,
+            ),
             onPressed: _loadReport,
           ),
         ],
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryCrimson))
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppTheme.primaryCrimson,
+                ),
+              )
             : _errorMessage != null
-                ? _buildErrorView()
-                : RefreshIndicator(
-                    color: AppTheme.primaryCrimson,
-                    onRefresh: _loadReport,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 1. KPI Overview Grid (4 Cards)
-                          _buildKpiGrid(),
+            ? _buildErrorView()
+            : RefreshIndicator(
+                color: AppTheme.primaryCrimson,
+                onRefresh: _loadReport,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. KPI Overview Grid (4 Cards)
+                      _buildKpiGrid(),
 
-                          const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                          // 2. Blood Group Inventory Breakdown
-                          _buildBloodGroupBreakdown(),
+                      // 2. Blood Group Inventory Breakdown
+                      _buildBloodGroupBreakdown(),
 
-                          const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                          // 3. Operational Field Metrics
-                          _buildOperationalSummaryCard(),
+                      // 3. Operational Field Metrics
+                      _buildOperationalSummaryCard(),
 
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                    ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
+                ),
+              ),
       ),
     );
   }
@@ -314,10 +323,7 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppTheme.textSecondary,
-            ),
+            style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
           ),
         ],
       ),
@@ -325,7 +331,8 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
   }
 
   Widget _buildBloodGroupBreakdown() {
-    final breakdown = (_reportData['blood_group_breakdown'] as List<dynamic>?) ?? [];
+    final breakdown =
+        (_reportData['blood_group_breakdown'] as List<dynamic>?) ?? [];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -349,7 +356,11 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
             children: [
               const Row(
                 children: [
-                  Icon(Icons.pie_chart_outline_rounded, color: AppTheme.primaryCrimson, size: 20),
+                  Icon(
+                    Icons.pie_chart_outline_rounded,
+                    color: AppTheme.primaryCrimson,
+                    size: 20,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Blood Group Distribution',
@@ -369,7 +380,11 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
                 ),
                 child: const Text(
                   'NBTS Inventory',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textSecondary),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
               ),
             ],
@@ -379,7 +394,10 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                child: Text('No blood type data recorded yet', style: TextStyle(color: AppTheme.textSecondary)),
+                child: Text(
+                  'No blood type data recorded yet',
+                  style: TextStyle(color: AppTheme.textSecondary),
+                ),
               ),
             )
           else
@@ -450,7 +468,9 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
                         minHeight: 7,
                         backgroundColor: const Color(0xFFF1F5F9),
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          index % 2 == 0 ? AppTheme.primaryCrimson : const Color(0xFFE11D48),
+                          index % 2 == 0
+                              ? AppTheme.primaryCrimson
+                              : const Color(0xFFE11D48),
                         ),
                       ),
                     ),
@@ -481,7 +501,11 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
         children: [
           const Row(
             children: [
-              Icon(Icons.analytics_outlined, color: AppTheme.textPrimary, size: 20),
+              Icon(
+                Icons.analytics_outlined,
+                color: AppTheme.textPrimary,
+                size: 20,
+              ),
               SizedBox(width: 8),
               Text(
                 'Operational Capacity',
@@ -550,7 +574,11 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFDC2626)),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Color(0xFFDC2626),
+            ),
             const SizedBox(height: 12),
             Text(
               _errorMessage ?? 'Failed to load report data',
@@ -558,10 +586,7 @@ class _StaffReportsScreenState extends State<StaffReportsScreen> {
               style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadReport,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadReport, child: const Text('Retry')),
           ],
         ),
       ),

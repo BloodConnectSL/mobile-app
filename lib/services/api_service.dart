@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'auth_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +8,8 @@ import 'package:http/http.dart' as http;
 /// Top-level default base URL configuration.
 /// Defaults to 10.0.2.2:8080 for Android Emulator, and localhost:8080 for iOS / Web / Desktop.
 String getDefaultBaseUrl() {
+  const configured = String.fromEnvironment('API_BASE_URL');
+  if (configured.isNotEmpty) return configured;
   if (kIsWeb) {
     return 'http://localhost:8080';
   }
@@ -13,7 +17,7 @@ String getDefaultBaseUrl() {
     if (Platform.isAndroid) {
       // return 'http://localhost:8080';
       //  return 'http://10.0.2.2:8080';
-      return 'http://10.15.99.69:8080';
+      return 'http://10.0.2.2:8080';
     }
   } catch (_) {
     // Platform checking not supported on some platforms
@@ -45,14 +49,44 @@ class ApiService {
   static String baseUrl = getDefaultBaseUrl();
 
   /// Allows runtime override of API URL if testing on real devices (e.g. http://192.168.1.50:8080)
-  static void setCustomBaseUrl(String url) {
+  static Future<void> initialize() async {
+    const configured = String.fromEnvironment('API_BASE_URL');
+    if (configured.isNotEmpty) return;
+    try {
+      final saved = (await SharedPreferences.getInstance()).getString(
+        'bloodconnect_api_url',
+      );
+      if (saved != null && saved.isNotEmpty) {
+        baseUrl = saved;
+      }
+    } catch (_) {
+      /* Default platform URL remains available. */
+    }
+  }
+
+  static Future<void> setCustomBaseUrl(String url) async {
+    final uri = Uri.tryParse(url.trim());
+    if (uri == null ||
+        !['http', 'https'].contains(uri.scheme) ||
+        uri.host.isEmpty) {
+      throw ArgumentError('Enter a valid API URL');
+    }
     baseUrl = url.replaceAll(RegExp(r'/+$'), '');
+    try {
+      await (await SharedPreferences.getInstance()).setString(
+        'bloodconnect_api_url',
+        baseUrl,
+      );
+    } catch (_) {
+      /* Configuration remains active for this run. */
+    }
   }
 
   static Map<String, String> get _defaultHeaders => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (AuthStore.token != null) 'Authorization': 'Bearer ${AuthStore.token}',
+  };
 
   /// 1. Request OTP via SMS
   /// POST /api/v1/auth/otp/request
@@ -61,15 +95,12 @@ class ApiService {
     String purpose = 'registration',
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/auth/otp/request');
-    final payload = jsonEncode({
-      'phone': phone,
-      'purpose': purpose,
-    });
+    final payload = jsonEncode({'phone': phone, 'purpose': purpose});
 
     try {
       final response = await http
           .post(uri, headers: _defaultHeaders, body: payload)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 40));
 
       final Map<String, dynamic> data = _parseResponse(response);
       return data['message'] ?? 'OTP sent successfully';
@@ -77,7 +108,8 @@ class ApiService {
       if (e is ApiException) rethrow;
       throw ApiException(
         statusCode: 0,
-        message: 'Network error: Unable to connect to server at $baseUrl',
+        message:
+            'The SMS request timed out or the server could not be reached. Please wait a moment before trying again.',
       );
     }
   }
@@ -134,9 +166,13 @@ class ApiService {
     String? address,
     String? ethnicity,
     String? bloodTypeId,
+    bool privacyConsent = false,
+    bool healthConsent = false,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/donors/register');
     final Map<String, dynamic> body = {
+      'privacy_consent': privacyConsent,
+      'health_consent': healthConsent,
       'verification_token': verificationToken,
       'phone': phone,
       'password': password,
@@ -186,10 +222,7 @@ class ApiService {
     required String password,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/auth/login');
-    final payload = jsonEncode({
-      'username': username,
-      'password': password,
-    });
+    final payload = jsonEncode({'username': username, 'password': password});
 
     try {
       final response = await http
@@ -213,7 +246,8 @@ class ApiService {
     final trimmed = username.trim();
     if (trimmed.isEmpty) return false;
     final uri = Uri.parse(
-        '$baseUrl/api/v1/auth/check-username?username=${Uri.encodeComponent(trimmed)}');
+      '$baseUrl/api/v1/auth/check-username?username=${Uri.encodeComponent(trimmed)}',
+    );
 
     try {
       final response = await http
@@ -275,7 +309,9 @@ class ApiService {
 
   /// 6c. Get Districts Reference List
   /// GET /api/v1/districts
-  static Future<List<Map<String, dynamic>>> getDistricts({String? provinceId}) async {
+  static Future<List<Map<String, dynamic>>> getDistricts({
+    String? provinceId,
+  }) async {
     final query = (provinceId != null && provinceId.isNotEmpty)
         ? '?province_id=$provinceId'
         : '';
@@ -323,8 +359,10 @@ class ApiService {
       'country': country,
       'location': ?location,
       if (cityId != null && cityId.isNotEmpty) 'city_id': cityId,
-      if (districtId != null && districtId.isNotEmpty) 'district_id': districtId,
-      if (provinceId != null && provinceId.isNotEmpty) 'province_id': provinceId,
+      if (districtId != null && districtId.isNotEmpty)
+        'district_id': districtId,
+      if (provinceId != null && provinceId.isNotEmpty)
+        'province_id': provinceId,
     });
 
     try {
@@ -370,7 +408,9 @@ class ApiService {
       queryParams['donor_id'] = donorId;
     }
 
-    final uri = Uri.parse('$baseUrl/api/v1/camps').replace(queryParameters: queryParams);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/camps',
+    ).replace(queryParameters: queryParams);
     try {
       final response = await http
           .get(uri, headers: _defaultHeaders)
@@ -394,10 +434,7 @@ class ApiService {
     required String donorId,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/camps/confirm-visit');
-    final payload = jsonEncode({
-      'camp_id': campId,
-      'donor_id': donorId,
-    });
+    final payload = jsonEncode({'camp_id': campId, 'donor_id': donorId});
 
     try {
       final response = await http
@@ -422,10 +459,7 @@ class ApiService {
     required String donorId,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/camps/cancel-visit');
-    final payload = jsonEncode({
-      'camp_id': campId,
-      'donor_id': donorId,
-    });
+    final payload = jsonEncode({'camp_id': campId, 'donor_id': donorId});
 
     try {
       final response = await http
@@ -449,7 +483,9 @@ class ApiService {
     required String campId,
     required String donorId,
   }) async {
-    final uri = Uri.parse('$baseUrl/api/v1/camps/$campId/confirmation?donor_id=$donorId');
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/camps/$campId/confirmation?donor_id=$donorId',
+    );
     try {
       final response = await http
           .get(uri, headers: _defaultHeaders)
@@ -479,7 +515,9 @@ class ApiService {
       queryParams['search'] = search.trim();
     }
 
-    final uri = Uri.parse('$baseUrl/api/v1/donors/donations').replace(queryParameters: queryParams);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/donors/donations',
+    ).replace(queryParameters: queryParams);
     try {
       final response = await http
           .get(uri, headers: _defaultHeaders)
@@ -510,7 +548,9 @@ class ApiService {
       queryParams['donor_id'] = donorId;
     }
 
-    final uri = Uri.parse('$baseUrl/api/v1/donors/profile').replace(queryParameters: queryParams);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/donors/profile',
+    ).replace(queryParameters: queryParams);
     try {
       final response = await http
           .get(uri, headers: _defaultHeaders)
@@ -543,9 +583,7 @@ class ApiService {
     String? verificationToken,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/donors/profile');
-    final Map<String, dynamic> payload = {
-      'user_id': userId,
-    };
+    final Map<String, dynamic> payload = {'user_id': userId};
     if (firstName != null) payload['first_name'] = firstName;
     if (lastName != null) payload['last_name'] = lastName;
     if (address != null) payload['address'] = address;
@@ -593,8 +631,9 @@ class ApiService {
       params['staff_role'] = staffRole;
     }
 
-    final uri = Uri.parse('$baseUrl/api/v1/staff/scan/$cleanId')
-        .replace(queryParameters: params.isEmpty ? null : params);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/staff/scan/$cleanId',
+    ).replace(queryParameters: params.isEmpty ? null : params);
 
     try {
       final response = await http
@@ -639,8 +678,9 @@ class ApiService {
       params['staff_role'] = staffRole.trim();
     }
 
-    final uri = Uri.parse('$baseUrl/api/v1/staff/donor-history')
-        .replace(queryParameters: params);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/staff/donor-history',
+    ).replace(queryParameters: params);
 
     try {
       final response = await http
@@ -698,11 +738,14 @@ class ApiService {
   }) async {
     final params = <String, String>{};
     if (campId != null && campId.isNotEmpty) params['camp_id'] = campId;
-    if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
+    if (search != null && search.trim().isNotEmpty) {
+      params['search'] = search.trim();
+    }
     if (status != null && status.isNotEmpty) params['status'] = status;
 
-    final uri = Uri.parse('$baseUrl/api/v1/staff/confirmed-donors')
-        .replace(queryParameters: params.isEmpty ? null : params);
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/staff/confirmed-donors',
+    ).replace(queryParameters: params.isEmpty ? null : params);
 
     try {
       final response = await http
@@ -726,12 +769,10 @@ class ApiService {
     required String staffUserId,
     required String staffRole,
   }) async {
-    final params = {
-      'staff_user_id': staffUserId,
-      'staff_role': staffRole,
-    };
-    final uri = Uri.parse('$baseUrl/api/v1/staff/active-duty')
-        .replace(queryParameters: params);
+    final params = {'staff_user_id': staffUserId, 'staff_role': staffRole};
+    final uri = Uri.parse(
+      '$baseUrl/api/v1/staff/active-duty',
+    ).replace(queryParameters: params);
 
     try {
       final response = await http
@@ -780,11 +821,7 @@ class ApiService {
 
     try {
       final response = await http
-          .post(
-            uri,
-            headers: _defaultHeaders,
-            body: jsonEncode(payload),
-          )
+          .post(uri, headers: _defaultHeaders, body: jsonEncode(payload))
           .timeout(const Duration(seconds: 15));
 
       final Map<String, dynamic> data = _parseResponse(response);
@@ -796,6 +833,57 @@ class ApiService {
         message: 'Network error: Failed to record blood donation',
       );
     }
+  }
+
+  static Future<Map<String, dynamic>> getCurrentUser() async {
+    final response = await http
+        .get(Uri.parse('$baseUrl/api/v1/auth/me'), headers: _defaultHeaders)
+        .timeout(const Duration(seconds: 15));
+    return Map<String, dynamic>.from(_parseResponse(response)['data'] as Map);
+  }
+
+  static Future<void> logout() async {
+    final response = await http
+        .post(
+          Uri.parse('$baseUrl/api/v1/auth/logout'),
+          headers: _defaultHeaders,
+        )
+        .timeout(const Duration(seconds: 10));
+    _parseResponse(response);
+  }
+
+  static Future<Map<String, dynamic>> getImpact() async {
+    final response = await http
+        .get(
+          Uri.parse('$baseUrl/api/v1/donors/me/impact'),
+          headers: _defaultHeaders,
+        )
+        .timeout(const Duration(seconds: 15));
+    return Map<String, dynamic>.from(_parseResponse(response)['data'] as Map);
+  }
+
+  static Future<Map<String, dynamic>> getDigitalPass() async {
+    final response = await http
+        .get(
+          Uri.parse('$baseUrl/api/v1/donors/me/digital-pass'),
+          headers: _defaultHeaders,
+        )
+        .timeout(const Duration(seconds: 15));
+    return Map<String, dynamic>.from(_parseResponse(response)['data'] as Map);
+  }
+
+  static Future<Map<String, dynamic>> management(
+    String path, {
+    String method = 'GET',
+    Map<String, dynamic>? body,
+  }) async {
+    final request = http.Request(method, Uri.parse('$baseUrl/api/v1$path'));
+    request.headers.addAll(_defaultHeaders);
+    if (body != null) request.body = jsonEncode(body);
+    final response = await http.Response.fromStream(
+      await request.send().timeout(const Duration(seconds: 15)),
+    );
+    return _parseResponse(response);
   }
 
   static Map<String, dynamic> _parseResponse(http.Response response) {
@@ -813,8 +901,11 @@ class ApiService {
       return body;
     }
 
+    if (response.statusCode == 401) AuthStore.expire();
+
     // Extract error message
-    final errorMessage = body['error'] ??
+    final errorMessage =
+        body['error'] ??
         body['message'] ??
         'Request failed with status: ${response.statusCode}';
 

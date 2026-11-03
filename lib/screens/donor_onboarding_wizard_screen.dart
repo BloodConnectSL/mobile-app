@@ -9,10 +9,7 @@ import 'login_screen.dart';
 class DonorOnboardingWizardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const DonorOnboardingWizardScreen({
-    super.key,
-    required this.userData,
-  });
+  const DonorOnboardingWizardScreen({super.key, required this.userData});
 
   @override
   State<DonorOnboardingWizardScreen> createState() =>
@@ -51,8 +48,9 @@ class _DonorOnboardingWizardScreenState
   bool _isLoadingDistricts = true;
 
   // Country & Silent GPS Location
-  final TextEditingController _countryController =
-      TextEditingController(text: 'Sri Lanka');
+  final TextEditingController _countryController = TextEditingController(
+    text: 'Sri Lanka',
+  );
   double? _latitude;
   double? _longitude;
 
@@ -86,31 +84,131 @@ class _DonorOnboardingWizardScreenState
 
   // Fallback districts with database UUIDs & province linkages
   static const List<Map<String, String>> _fallbackDistricts = [
-    {'id': 'a7687e78-4c89-41e2-aa2f-21c5b647b989', 'district': 'Colombo', 'province_id': '3ab2df10-1ba2-4b15-b0ae-3da27d7b93a4'},
-    {'id': 'e193735e-66ab-4e73-b9ce-6d64c29c68e5', 'district': 'Gampaha', 'province_id': '3ab2df10-1ba2-4b15-b0ae-3da27d7b93a4'},
-    {'id': '6f2d4af5-f6f1-4dad-8abe-8308b1032fe7', 'district': 'Kalutara', 'province_id': '3ab2df10-1ba2-4b15-b0ae-3da27d7b93a4'},
-    {'id': '26f18c74-f304-419d-8e49-435cc1f34a25', 'district': 'Kandy', 'province_id': 'd99a5eb8-9402-4b21-b133-f0bd1c0e8fe0'},
-    {'id': 'cd049c38-addf-4635-891b-9caf4e1e11c6', 'district': 'Matale', 'province_id': 'd99a5eb8-9402-4b21-b133-f0bd1c0e8fe0'},
-    {'id': '724c47f2-5c3f-4b9c-b268-b2d59843e067', 'district': 'Nuwara Eliya', 'province_id': 'd99a5eb8-9402-4b21-b133-f0bd1c0e8fe0'},
-    {'id': 'ca76e8a6-1a39-49fc-a9c5-e2094d7efa17', 'district': 'Galle', 'province_id': 'f14357ae-c4d4-4445-8629-6fcdff1c65ab'},
-    {'id': 'be4b12c8-b0dd-4d74-979d-bed597ca5767', 'district': 'Matara', 'province_id': 'f14357ae-c4d4-4445-8629-6fcdff1c65ab'},
-    {'id': '62bc5db8-189f-430a-9db8-a452bcfe73d2', 'district': 'Hambantota', 'province_id': 'f14357ae-c4d4-4445-8629-6fcdff1c65ab'},
-    {'id': 'be45c72e-d1b5-4f48-97f2-844357fef592', 'district': 'Jaffna', 'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9'},
-    {'id': 'ff18b06b-4676-489d-a932-0b0f0a6bc6b8', 'district': 'Kilinochchi', 'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9'},
-    {'id': '4de0bf6b-caf7-403e-bd12-c30d5e88c5f2', 'district': 'Mannar', 'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9'},
-    {'id': '048b7da9-3f4e-47e5-bcbc-fe09192d102e', 'district': 'Vavuniya', 'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9'},
-    {'id': '47ca7ddc-6ae6-4fbc-a2a1-7c4619659fdf', 'district': 'Mullaitivu', 'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9'},
-    {'id': 'a2d24bc7-efc4-4a65-a5c5-1d6913c54650', 'district': 'Batticaloa', 'province_id': 'b3010ec2-dcbf-40a0-8d6e-09acc75f68b4'},
-    {'id': 'b5c3d077-1256-46df-8390-d01b8d67bb82', 'district': 'Ampara', 'province_id': 'b3010ec2-dcbf-40a0-8d6e-09acc75f68b4'},
-    {'id': 'd0f73908-b915-4229-929b-ca27c0d980d6', 'district': 'Trincomalee', 'province_id': 'b3010ec2-dcbf-40a0-8d6e-09acc75f68b4'},
-    {'id': 'b4f919fa-ad18-449e-bd12-1c2eaad85a0b', 'district': 'Kurunegala', 'province_id': 'c02b45c8-1b42-4757-9ecd-9951aca32b18'},
-    {'id': 'a921ec01-79e2-4245-b1e4-f0b9a65dd6c4', 'district': 'Puttalam', 'province_id': 'c02b45c8-1b42-4757-9ecd-9951aca32b18'},
-    {'id': '336b7395-2761-41cf-a6c8-ec2cd6e7417f', 'district': 'Anuradhapura', 'province_id': '21f5872b-ed9e-4221-91a1-72cb5429833c'},
-    {'id': '09b7f6d8-2809-4021-a3d8-3af321957608', 'district': 'Polonnaruwa', 'province_id': '21f5872b-ed9e-4221-91a1-72cb5429833c'},
-    {'id': 'e17cf4d3-1f84-4b79-a3cb-a40a39a793a1', 'district': 'Badulla', 'province_id': '7463d1be-e9b9-4876-8a27-5f3860aa24a4'},
-    {'id': 'f41d3893-0558-446a-afe4-0b10690a5b21', 'district': 'Monaragala', 'province_id': '7463d1be-e9b9-4876-8a27-5f3860aa24a4'},
-    {'id': '3429ef62-6464-4956-b7a5-51fcd5f150d0', 'district': 'Ratnapura', 'province_id': 'f26b86b3-5579-44ad-b4c6-a692d5b23d02'},
-    {'id': '60a420b1-2b28-403a-b611-1125bf5472da', 'district': 'Kegalle', 'province_id': 'f26b86b3-5579-44ad-b4c6-a692d5b23d02'},
+    {
+      'id': 'a7687e78-4c89-41e2-aa2f-21c5b647b989',
+      'district': 'Colombo',
+      'province_id': '3ab2df10-1ba2-4b15-b0ae-3da27d7b93a4',
+    },
+    {
+      'id': 'e193735e-66ab-4e73-b9ce-6d64c29c68e5',
+      'district': 'Gampaha',
+      'province_id': '3ab2df10-1ba2-4b15-b0ae-3da27d7b93a4',
+    },
+    {
+      'id': '6f2d4af5-f6f1-4dad-8abe-8308b1032fe7',
+      'district': 'Kalutara',
+      'province_id': '3ab2df10-1ba2-4b15-b0ae-3da27d7b93a4',
+    },
+    {
+      'id': '26f18c74-f304-419d-8e49-435cc1f34a25',
+      'district': 'Kandy',
+      'province_id': 'd99a5eb8-9402-4b21-b133-f0bd1c0e8fe0',
+    },
+    {
+      'id': 'cd049c38-addf-4635-891b-9caf4e1e11c6',
+      'district': 'Matale',
+      'province_id': 'd99a5eb8-9402-4b21-b133-f0bd1c0e8fe0',
+    },
+    {
+      'id': '724c47f2-5c3f-4b9c-b268-b2d59843e067',
+      'district': 'Nuwara Eliya',
+      'province_id': 'd99a5eb8-9402-4b21-b133-f0bd1c0e8fe0',
+    },
+    {
+      'id': 'ca76e8a6-1a39-49fc-a9c5-e2094d7efa17',
+      'district': 'Galle',
+      'province_id': 'f14357ae-c4d4-4445-8629-6fcdff1c65ab',
+    },
+    {
+      'id': 'be4b12c8-b0dd-4d74-979d-bed597ca5767',
+      'district': 'Matara',
+      'province_id': 'f14357ae-c4d4-4445-8629-6fcdff1c65ab',
+    },
+    {
+      'id': '62bc5db8-189f-430a-9db8-a452bcfe73d2',
+      'district': 'Hambantota',
+      'province_id': 'f14357ae-c4d4-4445-8629-6fcdff1c65ab',
+    },
+    {
+      'id': 'be45c72e-d1b5-4f48-97f2-844357fef592',
+      'district': 'Jaffna',
+      'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9',
+    },
+    {
+      'id': 'ff18b06b-4676-489d-a932-0b0f0a6bc6b8',
+      'district': 'Kilinochchi',
+      'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9',
+    },
+    {
+      'id': '4de0bf6b-caf7-403e-bd12-c30d5e88c5f2',
+      'district': 'Mannar',
+      'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9',
+    },
+    {
+      'id': '048b7da9-3f4e-47e5-bcbc-fe09192d102e',
+      'district': 'Vavuniya',
+      'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9',
+    },
+    {
+      'id': '47ca7ddc-6ae6-4fbc-a2a1-7c4619659fdf',
+      'district': 'Mullaitivu',
+      'province_id': 'ad898830-f492-45f3-9cb8-1dac1e56e2f9',
+    },
+    {
+      'id': 'a2d24bc7-efc4-4a65-a5c5-1d6913c54650',
+      'district': 'Batticaloa',
+      'province_id': 'b3010ec2-dcbf-40a0-8d6e-09acc75f68b4',
+    },
+    {
+      'id': 'b5c3d077-1256-46df-8390-d01b8d67bb82',
+      'district': 'Ampara',
+      'province_id': 'b3010ec2-dcbf-40a0-8d6e-09acc75f68b4',
+    },
+    {
+      'id': 'd0f73908-b915-4229-929b-ca27c0d980d6',
+      'district': 'Trincomalee',
+      'province_id': 'b3010ec2-dcbf-40a0-8d6e-09acc75f68b4',
+    },
+    {
+      'id': 'b4f919fa-ad18-449e-bd12-1c2eaad85a0b',
+      'district': 'Kurunegala',
+      'province_id': 'c02b45c8-1b42-4757-9ecd-9951aca32b18',
+    },
+    {
+      'id': 'a921ec01-79e2-4245-b1e4-f0b9a65dd6c4',
+      'district': 'Puttalam',
+      'province_id': 'c02b45c8-1b42-4757-9ecd-9951aca32b18',
+    },
+    {
+      'id': '336b7395-2761-41cf-a6c8-ec2cd6e7417f',
+      'district': 'Anuradhapura',
+      'province_id': '21f5872b-ed9e-4221-91a1-72cb5429833c',
+    },
+    {
+      'id': '09b7f6d8-2809-4021-a3d8-3af321957608',
+      'district': 'Polonnaruwa',
+      'province_id': '21f5872b-ed9e-4221-91a1-72cb5429833c',
+    },
+    {
+      'id': 'e17cf4d3-1f84-4b79-a3cb-a40a39a793a1',
+      'district': 'Badulla',
+      'province_id': '7463d1be-e9b9-4876-8a27-5f3860aa24a4',
+    },
+    {
+      'id': 'f41d3893-0558-446a-afe4-0b10690a5b21',
+      'district': 'Monaragala',
+      'province_id': '7463d1be-e9b9-4876-8a27-5f3860aa24a4',
+    },
+    {
+      'id': '3429ef62-6464-4956-b7a5-51fcd5f150d0',
+      'district': 'Ratnapura',
+      'province_id': 'f26b86b3-5579-44ad-b4c6-a692d5b23d02',
+    },
+    {
+      'id': '60a420b1-2b28-403a-b611-1125bf5472da',
+      'district': 'Kegalle',
+      'province_id': 'f26b86b3-5579-44ad-b4c6-a692d5b23d02',
+    },
   ];
 
   @override
@@ -145,8 +243,9 @@ class _DonorOnboardingWizardScreenState
 
     if (!mounted) return;
     setState(() {
-      _bloodTypes =
-          _fallbackBloodTypes.map((e) => Map<String, dynamic>.from(e)).toList();
+      _bloodTypes = _fallbackBloodTypes
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
       _isLoadingBloodTypes = false;
     });
   }
@@ -165,10 +264,14 @@ class _DonorOnboardingWizardScreenState
       setState(() {
         _provinces = pList.isNotEmpty
             ? pList
-            : _fallbackProvinces.map((e) => Map<String, dynamic>.from(e)).toList();
+            : _fallbackProvinces
+                  .map((e) => Map<String, dynamic>.from(e))
+                  .toList();
         _allDistricts = dList.isNotEmpty
             ? dList
-            : _fallbackDistricts.map((e) => Map<String, dynamic>.from(e)).toList();
+            : _fallbackDistricts
+                  .map((e) => Map<String, dynamic>.from(e))
+                  .toList();
         _isLoadingProvinces = false;
         _isLoadingDistricts = false;
       });
@@ -179,10 +282,12 @@ class _DonorOnboardingWizardScreenState
 
     if (!mounted) return;
     setState(() {
-      _provinces =
-          _fallbackProvinces.map((e) => Map<String, dynamic>.from(e)).toList();
-      _allDistricts =
-          _fallbackDistricts.map((e) => Map<String, dynamic>.from(e)).toList();
+      _provinces = _fallbackProvinces
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      _allDistricts = _fallbackDistricts
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
       _isLoadingProvinces = false;
       _isLoadingDistricts = false;
     });
@@ -281,10 +386,7 @@ class _DonorOnboardingWizardScreenState
 
       Map<String, dynamic>? locationMap;
       if (_latitude != null && _longitude != null) {
-        locationMap = {
-          'latitude': _latitude,
-          'longitude': _longitude,
-        };
+        locationMap = {'latitude': _latitude, 'longitude': _longitude};
       }
 
       final result = await ApiService.completeDonorOnboarding(
@@ -318,7 +420,7 @@ class _DonorOnboardingWizardScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Profile setup complete! Welcome to BloodConnect SL.'),
+          content: Text('Profile setup complete! Welcome to Prana.'),
           backgroundColor: AppTheme.successGreen,
           behavior: SnackBarBehavior.floating,
         ),
@@ -398,7 +500,10 @@ class _DonorOnboardingWizardScreenState
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppTheme.textSecondary),
+            icon: const Icon(
+              Icons.logout_rounded,
+              color: AppTheme.textSecondary,
+            ),
             tooltip: 'Log Out',
             onPressed: _handleLogout,
           ),
@@ -438,8 +543,11 @@ class _DonorOnboardingWizardScreenState
                         CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.white.withAlpha(50),
-                          child: const Icon(Icons.verified_user_rounded,
-                              color: Colors.white, size: 22),
+                          child: const Icon(
+                            Icons.verified_user_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         const Expanded(
@@ -478,8 +586,11 @@ class _DonorOnboardingWizardScreenState
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Color(0xFFDC2626), size: 20),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Color(0xFFDC2626),
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -542,8 +653,10 @@ class _DonorOnboardingWizardScreenState
                       initialValue: _selectedBloodTypeId,
                       decoration: InputDecoration(
                         hintText: 'Select your blood group (e.g. O+, A+)',
-                        prefixIcon: const Icon(Icons.bloodtype_rounded,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: const Icon(
+                          Icons.bloodtype_rounded,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         filled: true,
                         fillColor: AppTheme.backgroundLight,
                         border: OutlineInputBorder(
@@ -589,8 +702,10 @@ class _DonorOnboardingWizardScreenState
                 initialValue: _selectedEthnicity,
                 decoration: InputDecoration(
                   hintText: 'Select your ethnicity',
-                  prefixIcon: const Icon(Icons.people_outline_rounded,
-                      color: AppTheme.primaryCrimson),
+                  prefixIcon: const Icon(
+                    Icons.people_outline_rounded,
+                    color: AppTheme.primaryCrimson,
+                  ),
                   filled: true,
                   fillColor: AppTheme.backgroundLight,
                   border: OutlineInputBorder(
@@ -603,10 +718,7 @@ class _DonorOnboardingWizardScreenState
                   ),
                 ),
                 items: _ethnicities.map((e) {
-                  return DropdownMenuItem<String>(
-                    value: e,
-                    child: Text(e),
-                  );
+                  return DropdownMenuItem<String>(value: e, child: Text(e));
                 }).toList(),
                 onChanged: (val) {
                   setState(() => _selectedEthnicity = val);
@@ -641,8 +753,10 @@ class _DonorOnboardingWizardScreenState
                 controller: _countryController,
                 decoration: InputDecoration(
                   hintText: 'Sri Lanka',
-                  prefixIcon: const Icon(Icons.public_rounded,
-                      color: AppTheme.primaryCrimson),
+                  prefixIcon: const Icon(
+                    Icons.public_rounded,
+                    color: AppTheme.primaryCrimson,
+                  ),
                   filled: true,
                   fillColor: AppTheme.backgroundLight,
                   border: OutlineInputBorder(
@@ -688,8 +802,10 @@ class _DonorOnboardingWizardScreenState
                       initialValue: _selectedProvinceId,
                       decoration: InputDecoration(
                         hintText: 'Select your province',
-                        prefixIcon: const Icon(Icons.map_rounded,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: const Icon(
+                          Icons.map_rounded,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         filled: true,
                         fillColor: AppTheme.backgroundLight,
                         border: OutlineInputBorder(
@@ -755,8 +871,10 @@ class _DonorOnboardingWizardScreenState
                         hintText: _selectedProvinceId == null
                             ? 'First select a province above'
                             : 'Select your district',
-                        prefixIcon: const Icon(Icons.location_city_rounded,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: const Icon(
+                          Icons.location_city_rounded,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         filled: true,
                         fillColor: _selectedProvinceId == null
                             ? const Color(0xFFF1F5F9)

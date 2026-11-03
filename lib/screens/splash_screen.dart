@@ -1,3 +1,4 @@
+import '../widgets/prana_logo.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -26,9 +27,10 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1200),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeIn),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeIn));
 
     _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
@@ -77,10 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Color(0xFFFFF5F5),
-            ],
+            colors: [Colors.white, Color(0xFFFFF5F5)],
           ),
         ),
         child: SafeArea(
@@ -101,19 +100,15 @@ class _SplashScreenState extends State<SplashScreen>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryCrimson.withValues(alpha: 0.3),
+                            color: AppTheme.primaryCrimson.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 24,
                             offset: const Offset(0, 10),
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.water_drop_rounded,
-                          size: 56,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: const Center(child: PranaLogo(size: 100)),
                     ),
                     const SizedBox(height: 28),
 
@@ -128,11 +123,11 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         children: [
                           TextSpan(
-                            text: 'BloodConnect',
+                            text: 'Prana',
                             style: TextStyle(color: AppTheme.primaryCrimson),
                           ),
                           TextSpan(
-                            text: 'SL',
+                            text: ' ප්‍රාණ',
                             style: TextStyle(color: Color(0xFF1E293B)),
                           ),
                         ],
@@ -142,7 +137,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                     // Tagline
                     const Text(
-                      'National Blood Donation Network',
+                      'Community blood donation in Sri Lanka',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

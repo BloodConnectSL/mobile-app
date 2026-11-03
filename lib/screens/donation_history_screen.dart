@@ -7,10 +7,7 @@ import '../theme/app_theme.dart';
 class DonationHistoryScreen extends StatefulWidget {
   final Map<String, dynamic>? userData;
 
-  const DonationHistoryScreen({
-    super.key,
-    this.userData,
-  });
+  const DonationHistoryScreen({super.key, this.userData});
 
   @override
   State<DonationHistoryScreen> createState() => _DonationHistoryScreenState();
@@ -75,7 +72,8 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     if (donorId == null || donorId.isEmpty) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'No donor profile identifier found. Please log in again.';
+        _errorMessage =
+            'No donor profile identifier found. Please log in again.';
       });
       return;
     }
@@ -97,13 +95,17 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       final rawData = res['data'] as List<dynamic>? ?? [];
       final total = res['total'] is int
           ? res['total'] as int
-          : (res['total'] is num ? (res['total'] as num).toInt() : rawData.length);
+          : (res['total'] is num
+                ? (res['total'] as num).toInt()
+                : rawData.length);
       final totalPages = res['total_pages'] is int
           ? res['total_pages'] as int
           : (total > 0 ? (total / _pageSize).ceil() : 1);
 
       setState(() {
-        _donations = rawData.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _donations = rawData
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
         _totalCount = total;
         _totalPages = totalPages > 0 ? totalPages : 1;
         _isLoading = false;
@@ -139,9 +141,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
           _buildSearchAndFilterHeader(),
 
           // ─── Content List ───────────────────────────────────────────────
-          Expanded(
-            child: _buildMainContent(),
-          ),
+          Expanded(child: _buildMainContent()),
 
           // ─── Page-wise Pagination Bar ───────────────────────────────────
           if (!_isLoading && _donations.isNotEmpty) _buildPaginationBar(),
@@ -179,15 +179,26 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   color: Colors.grey.shade500,
                   fontSize: 13.5,
                 ),
-                prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 21),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppTheme.textSecondary,
+                  size: 21,
+                ),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 19, color: AppTheme.textSecondary),
+                        icon: const Icon(
+                          Icons.clear_rounded,
+                          size: 19,
+                          color: AppTheme.textSecondary,
+                        ),
                         onPressed: _clearSearch,
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
               ),
             ),
           ),
@@ -234,7 +245,9 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryCrimson),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                AppTheme.primaryCrimson,
+              ),
             ),
             SizedBox(height: 16),
             Text(
@@ -257,7 +270,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppTheme.errorRed, size: 48),
+              const Icon(
+                Icons.error_outline_rounded,
+                color: AppTheme.errorRed,
+                size: 48,
+              ),
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
@@ -298,11 +315,17 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   color: AppTheme.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.bloodtype_outlined, size: 48, color: AppTheme.primaryCrimson),
+                child: const Icon(
+                  Icons.bloodtype_outlined,
+                  size: 48,
+                  color: AppTheme.primaryCrimson,
+                ),
               ),
               const SizedBox(height: 18),
               Text(
-                isFiltered ? 'No Donations Match Your Search' : 'No Donation History Yet',
+                isFiltered
+                    ? 'No Donations Match Your Search'
+                    : 'No Donation History Yet',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -371,11 +394,13 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       facilityLocation = camp['venue_name'] ?? camp['city'] ?? '';
     }
 
-    final volumeMl = item['volume_ml']?.toString() ?? '450';
-    final componentType = (item['component_type'] ?? 'WHOLE_BLOOD').toString().replaceAll('_', ' ');
+    final volumeMl = item['volume_ml']?.toString() ?? '—';
+    final componentType = (item['component_type'] ?? 'WHOLE_BLOOD')
+        .toString()
+        .replaceAll('_', ' ');
     final status = (item['status'] ?? 'COMPLETED').toString().toUpperCase();
-    final hemoglobins = item['hemoglobins_level']?.toString() ?? '14.0';
-    final bloodPressure = item['blood_pressure']?.toString() ?? '120/80';
+    final hemoglobins = item['hemoglobins_level']?.toString() ?? '—';
+    final bloodPressure = item['blood_pressure']?.toString() ?? 'Not recorded';
 
     // Parse date
     String dateStr = 'Unknown Date';
@@ -425,21 +450,32 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isHospital ? const Color(0xFFEFF6FF) : const Color(0xFFFAF5FF),
+                      color: isHospital
+                          ? const Color(0xFFEFF6FF)
+                          : const Color(0xFFFAF5FF),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isHospital ? const Color(0xFFBFDBFE) : const Color(0xFFE9D5FF),
+                        color: isHospital
+                            ? const Color(0xFFBFDBFE)
+                            : const Color(0xFFE9D5FF),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isHospital ? Icons.local_hospital_rounded : Icons.campaign_rounded,
+                          isHospital
+                              ? Icons.local_hospital_rounded
+                              : Icons.campaign_rounded,
                           size: 14,
-                          color: isHospital ? const Color(0xFF2563EB) : const Color(0xFF9333EA),
+                          color: isHospital
+                              ? const Color(0xFF2563EB)
+                              : const Color(0xFF9333EA),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -447,7 +483,9 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
-                            color: isHospital ? const Color(0xFF2563EB) : const Color(0xFF9333EA),
+                            color: isHospital
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF9333EA),
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -455,7 +493,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusBg,
                       borderRadius: BorderRadius.circular(8),
@@ -463,7 +504,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.check_circle_rounded, size: 13, color: statusColor),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 13,
+                          color: statusColor,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           status,
@@ -494,7 +539,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 15, color: Color(0xFF64748B)),
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 15,
+                      color: Color(0xFF64748B),
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -516,7 +565,11 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
               // Date & Time
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppTheme.textSecondary),
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 14,
+                    color: AppTheme.textSecondary,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     timeStr.isNotEmpty ? '$dateStr • $timeStr' : dateStr,
@@ -536,12 +589,28 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildMetricItem(Icons.water_drop_rounded, '$volumeMl ml', componentType),
-                  _buildMetricItem(Icons.monitor_heart_outlined, '$hemoglobins g/dL', 'Hemoglobin'),
-                  _buildMetricItem(Icons.speed_rounded, bloodPressure, 'BP Reading'),
+                  _buildMetricItem(
+                    Icons.water_drop_rounded,
+                    '$volumeMl ml',
+                    componentType,
+                  ),
+                  _buildMetricItem(
+                    Icons.monitor_heart_outlined,
+                    '$hemoglobins g/dL',
+                    'Hemoglobin',
+                  ),
+                  _buildMetricItem(
+                    Icons.speed_rounded,
+                    bloodPressure,
+                    'BP Reading',
+                  ),
                   IconButton(
                     tooltip: 'More Details',
-                    icon: const Icon(Icons.arrow_forward_ios_rounded, size: 15, color: AppTheme.primaryCrimson),
+                    icon: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 15,
+                      color: AppTheme.primaryCrimson,
+                    ),
                     onPressed: () => _showDonationDetailsModal(item),
                   ),
                 ],
@@ -598,7 +667,9 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
             // Previous Button
             IconButton(
               icon: const Icon(Icons.chevron_left_rounded),
-              onPressed: _currentPage > 1 ? () => _fetchDonations(page: _currentPage - 1) : null,
+              onPressed: _currentPage > 1
+                  ? () => _fetchDonations(page: _currentPage - 1)
+                  : null,
               color: AppTheme.primaryCrimson,
               disabledColor: Colors.grey.shade300,
             ),
@@ -613,17 +684,26 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 3),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    onTap: isCurrent ? null : () => _fetchDonations(page: pageNum),
+                    onTap: isCurrent
+                        ? null
+                        : () => _fetchDonations(page: pageNum),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
-                        color: isCurrent ? AppTheme.primaryCrimson : const Color(0xFFF1F5F9),
+                        color: isCurrent
+                            ? AppTheme.primaryCrimson
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '$pageNum',
                         style: TextStyle(
-                          color: isCurrent ? Colors.white : AppTheme.textPrimary,
+                          color: isCurrent
+                              ? Colors.white
+                              : AppTheme.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
@@ -637,7 +717,9 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
             // Next Button
             IconButton(
               icon: const Icon(Icons.chevron_right_rounded),
-              onPressed: _currentPage < _totalPages ? () => _fetchDonations(page: _currentPage + 1) : null,
+              onPressed: _currentPage < _totalPages
+                  ? () => _fetchDonations(page: _currentPage + 1)
+                  : null,
               color: AppTheme.primaryCrimson,
               disabledColor: Colors.grey.shade300,
             ),
@@ -656,7 +738,9 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     final donor = item['donor'] as Map<String, dynamic>?;
 
     String facilityName = 'Blood Donation Facility';
-    String facilityType = isHospital ? 'Hospital Walk-in' : 'Blood Donation Camp';
+    String facilityType = isHospital
+        ? 'Hospital Walk-in'
+        : 'Blood Donation Camp';
     String address = '';
     String city = '';
     String phone = '';
@@ -686,12 +770,15 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     }
 
     final donationId = item['id']?.toString() ?? '';
-    final volumeMl = item['volume_ml']?.toString() ?? '450';
-    final componentType = (item['component_type'] ?? 'WHOLE_BLOOD').toString().replaceAll('_', ' ');
+    final volumeMl = item['volume_ml']?.toString() ?? '—';
+    final componentType = (item['component_type'] ?? 'WHOLE_BLOOD')
+        .toString()
+        .replaceAll('_', ' ');
     final status = (item['status'] ?? 'COMPLETED').toString().toUpperCase();
-    final hemoglobins = item['hemoglobins_level']?.toString() ?? '14.0';
-    final bloodPressure = item['blood_pressure']?.toString() ?? '120/80';
-    final storageLocation = item['storage_location']?.toString() ?? 'Cold Storage Unit';
+    final hemoglobins = item['hemoglobins_level']?.toString() ?? '—';
+    final bloodPressure = item['blood_pressure']?.toString() ?? 'Not recorded';
+    final storageLocation =
+        item['storage_location']?.toString() ?? 'Cold Storage Unit';
 
     // Parse Dates
     String formattedDonationDate = 'Not specified';
@@ -699,7 +786,9 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     if (rawDonationDate != null) {
       try {
         final d = DateTime.parse(rawDonationDate).toLocal();
-        formattedDonationDate = DateFormat('EEEE, dd MMMM yyyy • hh:mm a').format(d);
+        formattedDonationDate = DateFormat(
+          'EEEE, dd MMMM yyyy • hh:mm a',
+        ).format(d);
       } catch (_) {}
     }
 
@@ -719,7 +808,8 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
       bloodGroupDisplay = btObj['display_name'] ?? btObj['abo_group'] ?? '';
     }
     if (bloodGroupDisplay.isEmpty) {
-      bloodGroupDisplay = widget.userData?['blood_type']?.toString() ?? 'Compatible';
+      bloodGroupDisplay =
+          widget.userData?['blood_type']?.toString() ?? 'Compatible';
     }
 
     showModalBottomSheet(
@@ -754,7 +844,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
 
                   // Header Row
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -763,7 +856,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppTheme.successBackground,
                                   borderRadius: BorderRadius.circular(8),
@@ -801,7 +897,10 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, color: AppTheme.textSecondary),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppTheme.textSecondary,
+                          ),
                           onPressed: () => Navigator.of(ctx).pop(),
                         ),
                       ],
@@ -898,10 +997,16 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                               const SizedBox(height: 8),
                               _buildInfoRow('Storage Unit', storageLocation),
                               const SizedBox(height: 8),
-                              _buildInfoRow('Shelf Expiration', formattedExpDate),
+                              _buildInfoRow(
+                                'Shelf Expiration',
+                                formattedExpDate,
+                              ),
                               if (donationId.isNotEmpty) ...[
                                 const SizedBox(height: 8),
-                                _buildInfoRow('Donation Ref ID', donationId.substring(0, 8).toUpperCase()),
+                                _buildInfoRow(
+                                  'Donation Ref ID',
+                                  donationId.substring(0, 8).toUpperCase(),
+                                ),
                               ],
                             ],
                           ),
@@ -916,7 +1021,8 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (address.isNotEmpty) _buildInfoRow('Address / Venue', address),
+                              if (address.isNotEmpty)
+                                _buildInfoRow('Address / Venue', address),
                               if (city.isNotEmpty) ...[
                                 const SizedBox(height: 8),
                                 _buildInfoRow('City', city),
@@ -947,9 +1053,14 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
                               backgroundColor: AppTheme.primaryCrimson,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
-                            child: const Text('Close Details', style: TextStyle(fontWeight: FontWeight.w700)),
+                            child: const Text(
+                              'Close Details',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
                           ),
                         ),
                       ],
@@ -1001,7 +1112,12 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen> {
     );
   }
 
-  Widget _buildModalStatCard(String title, String val, IconData icon, Color color) {
+  Widget _buildModalStatCard(
+    String title,
+    String val,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(

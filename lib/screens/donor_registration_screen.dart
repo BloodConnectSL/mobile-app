@@ -21,6 +21,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
+  bool _privacyConsent = false, _healthConsent = false;
   final _nicController = TextEditingController();
   final _dobController = TextEditingController();
   final _addressController = TextEditingController();
@@ -34,10 +35,11 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
 
   // Section B: Phone Verification & In-Line OTP
   final _phoneController = TextEditingController(text: '+94');
-  final List<TextEditingController> _otpControllers =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _otpFocusNodes =
-      List.generate(6, (_) => FocusNode());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
 
   bool _isSendingOtp = false;
   bool _otpSent = false;
@@ -98,7 +100,8 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
       setState(() {
         _isCheckingUsername = false;
         _isUsernameAvailable = false;
-        _usernameStatusMessage = 'Only letters, numbers, dots, and underscores allowed';
+        _usernameStatusMessage =
+            'Only letters, numbers, dots, and underscores allowed';
       });
       return;
     }
@@ -115,8 +118,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
         setState(() {
           _isCheckingUsername = false;
           _isUsernameAvailable = available;
-          _usernameStatusMessage =
-              available ? 'Username is available' : 'Username is already taken';
+          _usernameStatusMessage = available
+              ? 'Username is available'
+              : 'Username is already taken';
         });
       } catch (_) {
         if (!mounted) return;
@@ -150,7 +154,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
     if (!_isPhoneValid(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a valid Sri Lankan phone number (e.g. +94771234567 or 0771234567)'),
+          content: Text(
+            'Please enter a valid Sri Lankan phone number (e.g. +94771234567 or 0771234567)',
+          ),
           backgroundColor: AppTheme.errorRed,
           behavior: SnackBarBehavior.floating,
         ),
@@ -288,7 +294,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
   Future<void> _pickDateOfBirth() async {
     final initialDate = _selectedDob ?? DateTime(2000, 1, 1);
     final firstDate = DateTime(1940);
-    final lastDate = DateTime.now().subtract(const Duration(days: 365 * 16)); // At least 16 yrs old
+    final lastDate = DateTime.now().subtract(
+      const Duration(days: 365 * 16),
+    ); // At least 16 yrs old
 
     final picked = await showDatePicker(
       context: context,
@@ -345,7 +353,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
     if (_isUsernameAvailable == false) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('The chosen username is already taken. Please choose another.'),
+          content: Text(
+            'The chosen username is already taken. Please choose another.',
+          ),
           backgroundColor: AppTheme.errorRed,
           behavior: SnackBarBehavior.floating,
         ),
@@ -353,6 +363,16 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
       return;
     }
 
+    if (!_privacyConsent || !_healthConsent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please review and accept the privacy and health data consent choices.',
+          ),
+        ),
+      );
+      return;
+    }
     setState(() {
       _isSubmitting = true;
       _submissionError = null;
@@ -363,6 +383,8 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
     try {
       final phone = _getFormattedPhone();
       final result = await ApiService.registerDonor(
+        privacyConsent: _privacyConsent,
+        healthConsent: _healthConsent,
         verificationToken: _verificationToken!,
         phone: phone,
         username: _usernameController.text.trim(),
@@ -416,9 +438,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(
-        title: const Text('Donor Registration'),
-      ),
+      appBar: AppBar(title: const Text('Donor Registration')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -460,8 +480,11 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline,
-                            color: AppTheme.errorRed, size: 20),
+                        const Icon(
+                          Icons.error_outline,
+                          color: AppTheme.errorRed,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -526,15 +549,21 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       textCapitalization: TextCapitalization.characters,
                       decoration: const InputDecoration(
                         labelText: 'NIC / National ID',
-                        hintText: '12 digits or 9 digits + V (e.g. 199512345678)',
-                        prefixIcon: Icon(Icons.badge_outlined,
-                            color: AppTheme.primaryCrimson),
+                        hintText:
+                            '12 digits or 9 digits + V (e.g. 199512345678)',
+                        prefixIcon: Icon(
+                          Icons.badge_outlined,
+                          color: AppTheme.primaryCrimson,
+                        ),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return null; // Optional
+                        if (v == null || v.trim().isEmpty) {
+                          return null; // Optional
+                        }
                         final val = v.trim();
-                        if (!RegExp(r'^([0-9]{9}[vVxX]|[0-9]{12})$')
-                            .hasMatch(val)) {
+                        if (!RegExp(
+                          r'^([0-9]{9}[vVxX]|[0-9]{12})$',
+                        ).hasMatch(val)) {
                           return 'Enter a valid NIC (9 digits+V or 12 digits)';
                         }
                         return null;
@@ -554,8 +583,10 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                             decoration: const InputDecoration(
                               labelText: 'Date of Birth',
                               hintText: 'YYYY-MM-DD',
-                              prefixIcon: Icon(Icons.calendar_today_outlined,
-                                  color: AppTheme.primaryCrimson),
+                              prefixIcon: Icon(
+                                Icons.calendar_today_outlined,
+                                color: AppTheme.primaryCrimson,
+                              ),
                             ),
                           ),
                         ),
@@ -567,16 +598,24 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                             initialValue: _gender,
                             decoration: const InputDecoration(
                               labelText: 'Gender',
-                              prefixIcon: Icon(Icons.wc_outlined,
-                                  color: AppTheme.primaryCrimson),
+                              prefixIcon: Icon(
+                                Icons.wc_outlined,
+                                color: AppTheme.primaryCrimson,
+                              ),
                             ),
                             items: const [
                               DropdownMenuItem(
-                                  value: 'MALE', child: Text('Male')),
+                                value: 'MALE',
+                                child: Text('Male'),
+                              ),
                               DropdownMenuItem(
-                                  value: 'FEMALE', child: Text('Female')),
+                                value: 'FEMALE',
+                                child: Text('Female'),
+                              ),
                               DropdownMenuItem(
-                                  value: 'OTHER', child: Text('Other')),
+                                value: 'OTHER',
+                                child: Text('Other'),
+                              ),
                             ],
                             onChanged: (val) {
                               if (val != null) {
@@ -596,8 +635,10 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Residential Address',
                         hintText: 'Street address, city, district',
-                        prefixIcon: Icon(Icons.home_outlined,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: Icon(
+                          Icons.home_outlined,
+                          color: AppTheme.primaryCrimson,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -610,8 +651,10 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       decoration: InputDecoration(
                         labelText: 'Username *',
                         hintText: 'Choose a unique username (e.g. kamal_p)',
-                        prefixIcon: const Icon(Icons.account_circle_outlined,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: const Icon(
+                          Icons.account_circle_outlined,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         suffixIcon: _isCheckingUsername
                             ? const Padding(
                                 padding: EdgeInsets.all(12.0),
@@ -625,19 +668,20 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                                 ),
                               )
                             : _isUsernameAvailable == true
-                                ? const Icon(Icons.check_circle,
-                                    color: AppTheme.successGreen)
-                                : _isUsernameAvailable == false
-                                    ? const Icon(Icons.cancel,
-                                        color: AppTheme.errorRed)
-                                    : null,
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: AppTheme.successGreen,
+                              )
+                            : _isUsernameAvailable == false
+                            ? const Icon(Icons.cancel, color: AppTheme.errorRed)
+                            : null,
                         helperText: _usernameStatusMessage,
                         helperStyle: TextStyle(
                           color: _isUsernameAvailable == true
                               ? AppTheme.successGreen
                               : _isUsernameAvailable == false
-                                  ? AppTheme.errorRed
-                                  : AppTheme.textSecondary,
+                              ? AppTheme.errorRed
+                              : AppTheme.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -667,8 +711,10 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       decoration: InputDecoration(
                         labelText: 'Password *',
                         hintText: 'At least 8 characters',
-                        prefixIcon: const Icon(Icons.lock_outline,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -677,11 +723,14 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                             color: AppTheme.textMuted,
                           ),
                           onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword),
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Password is required';
+                        if (v == null || v.isEmpty) {
+                          return 'Password is required';
+                        }
                         if (v.length < 8) {
                           return 'Password must be at least 8 characters';
                         }
@@ -697,8 +746,10 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       decoration: InputDecoration(
                         labelText: 'Confirm Password *',
                         hintText: 'Re-enter your password',
-                        prefixIcon: const Icon(Icons.lock_reset_outlined,
-                            color: AppTheme.primaryCrimson),
+                        prefixIcon: const Icon(
+                          Icons.lock_reset_outlined,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword
@@ -706,9 +757,10 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                                 : Icons.visibility_outlined,
                             color: AppTheme.textMuted,
                           ),
-                          onPressed: () => setState(() =>
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword),
+                          onPressed: () => setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          ),
                         ),
                       ),
                       validator: (v) {
@@ -744,11 +796,15 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                             decoration: InputDecoration(
                               labelText: 'Phone Number *',
                               hintText: '+94771234567 or 0771234567',
-                              prefixIcon: const Icon(Icons.phone_android,
-                                  color: AppTheme.primaryCrimson),
+                              prefixIcon: const Icon(
+                                Icons.phone_android,
+                                color: AppTheme.primaryCrimson,
+                              ),
                               suffixIcon: _isPhoneVerified
-                                  ? const Icon(Icons.verified,
-                                      color: AppTheme.successGreen)
+                                  ? const Icon(
+                                      Icons.verified,
+                                      color: AppTheme.successGreen,
+                                    )
                                   : null,
                             ),
                             validator: (v) {
@@ -768,7 +824,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                           height: 54,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -776,7 +834,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                                   ? AppTheme.successGreen
                                   : AppTheme.primaryCrimson,
                             ),
-                            onPressed: isPhoneSendEnabled ? _handleSendOtp : null,
+                            onPressed: isPhoneSendEnabled
+                                ? _handleSendOtp
+                                : null,
                             child: _isSendingOtp
                                 ? const SizedBox(
                                     width: 18,
@@ -784,17 +844,18 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
+                                        Colors.white,
+                                      ),
                                     ),
                                   )
                                 : Text(
                                     _isPhoneVerified
                                         ? 'Verified ✓'
                                         : (_resendCountdown > 0
-                                            ? '${_resendCountdown}s'
-                                            : (_otpSent
-                                                ? 'Resend'
-                                                : 'Send OTP')),
+                                              ? '${_resendCountdown}s'
+                                              : (_otpSent
+                                                    ? 'Resend'
+                                                    : 'Send OTP')),
                                     style: const TextStyle(fontSize: 13),
                                   ),
                           ),
@@ -807,17 +868,24 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.successBackground,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppTheme.successGreen, width: 1.2),
+                            color: AppTheme.successGreen,
+                            width: 1.2,
+                          ),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.check_circle_rounded,
-                                color: AppTheme.successGreen, size: 22),
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: AppTheme.successGreen,
+                              size: 22,
+                            ),
                             SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -904,15 +972,18 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                                     // Handle multi-character paste
                                     if (value.length > 1) {
                                       final digits = value.split('');
-                                      for (int i = 0;
-                                          i < digits.length && (index + i) < 6;
-                                          i++) {
+                                      for (
+                                        int i = 0;
+                                        i < digits.length && (index + i) < 6;
+                                        i++
+                                      ) {
                                         _otpControllers[index + i].text =
                                             digits[i];
                                       }
                                       final targetIndex = (index + value.length)
                                           .clamp(0, 5);
-                                      _otpFocusNodes[targetIndex].requestFocus();
+                                      _otpFocusNodes[targetIndex]
+                                          .requestFocus();
                                       return;
                                     }
                                     if (index < 5) {
@@ -934,8 +1005,7 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                         width: double.infinity,
                         height: 48,
                         child: OutlinedButton(
-                          onPressed:
-                              _isVerifyingOtp ? null : _handleVerifyOtp,
+                          onPressed: _isVerifyingOtp ? null : _handleVerifyOtp,
                           child: _isVerifyingOtp
                               ? const SizedBox(
                                   width: 18,
@@ -943,7 +1013,8 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppTheme.primaryCrimson),
+                                      AppTheme.primaryCrimson,
+                                    ),
                                   ),
                                 )
                               : const Text('Verify OTP Code'),
@@ -957,6 +1028,26 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                 // ========================================================
                 // SECTION C: Submission
                 // ========================================================
+                const Text(
+                  'Prana uses your identity and contact details to manage your account, and health records for donation screening and history. Location is optional. We do not sell donor data.',
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'I agree to the privacy notice and account data processing.',
+                  ),
+                  value: _privacyConsent,
+                  onChanged: (v) =>
+                      setState(() => _privacyConsent = v ?? false),
+                ),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'I consent to health records being used for screening and shared with authorized clinical staff.',
+                  ),
+                  value: _healthConsent,
+                  onChanged: (v) => setState(() => _healthConsent = v ?? false),
+                ),
                 ElevatedButton(
                   onPressed: (_isPhoneVerified && !_isSubmitting)
                       ? _handleSubmitRegistration
@@ -970,8 +1061,9 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                           width: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : Text(
@@ -1017,7 +1109,11 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
                 ),
               ],
             ),
-            const Divider(height: 24, thickness: 1, color: AppTheme.borderSubtle),
+            const Divider(
+              height: 24,
+              thickness: 1,
+              color: AppTheme.borderSubtle,
+            ),
             ...children,
           ],
         ),

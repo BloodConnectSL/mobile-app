@@ -42,7 +42,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     super.initState();
     _loadActiveDuty();
 
-    if (widget.initialIdentifier != null && widget.initialIdentifier!.isNotEmpty) {
+    if (widget.initialIdentifier != null &&
+        widget.initialIdentifier!.isNotEmpty) {
       _manualInputController.text = widget.initialIdentifier!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _verifyIdentifier(widget.initialIdentifier!);
@@ -154,7 +155,8 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Could not verify donor. Please check connection and try again.';
+          _errorMessage =
+              'Could not verify donor. Please check connection and try again.';
           _isLoading = false;
         });
         try {
@@ -206,12 +208,15 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
 
     // Check if duplicate donation is already recorded
     if (_scannedDonor!['already_recorded'] == true) {
-      final msg = _scannedDonor!['already_recorded_message']?.toString() ??
+      final msg =
+          _scannedDonor!['already_recorded_message']?.toString() ??
           'Blood donation already recorded from this donor for this camp.';
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.lock_rounded, color: Color(0xFFDC2626)),
@@ -226,12 +231,22 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           ),
           content: Text(
             msg,
-            style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, height: 1.4),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary,
+              height: 1.4,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryCrimson)),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryCrimson,
+                ),
+              ),
             ),
           ],
         ),
@@ -241,12 +256,15 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
 
     // Check if donor is ineligible (minimum donation interval not met)
     if (_scannedDonor!['is_eligible'] == false) {
-      final msg = _scannedDonor!['eligibility_message']?.toString() ??
+      final msg =
+          _scannedDonor!['eligibility_message']?.toString() ??
           'Donor does not meet the minimum donation interval criteria.';
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.block_rounded, color: Color(0xFFDC2626)),
@@ -261,12 +279,22 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           ),
           content: Text(
             'Blood donation recording is locked for this donor.\n\n$msg\n\nRecording donations before the required recovery period is restricted to safeguard donor health.',
-            style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary, height: 1.4),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary,
+              height: 1.4,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryCrimson)),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryCrimson,
+                ),
+              ),
             ),
           ],
         ),
@@ -290,7 +318,7 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               ],
             ),
             content: const Text(
-              'You cannot record donations at this time because your account is not assigned to an ongoing blood camp in assigned_staff_members.\n\nPlease contact your Organization Administrator.',
+              'You cannot record donations at this time because your account is not assigned to an ongoing blood camp for your organization.\n\nPlease contact your Organization Administrator.',
             ),
             actions: [
               TextButton(
@@ -332,13 +360,16 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
   }
 
   void _showDonationSuccessDialog(Map<String, dynamic> donation) {
-    final donorName = donation['donor_name'] ?? _scannedDonor?['full_name'] ?? 'Donor';
+    final donorName =
+        donation['donor_name'] ?? _scannedDonor?['full_name'] ?? 'Donor';
     final vol = donation['volume_ml'] ?? 450;
-    final bloodGroup = donation['blood_group'] ?? _scannedDonor?['blood_group'] ?? '';
+    final bloodGroup =
+        donation['blood_group'] ?? _scannedDonor?['blood_group'] ?? '';
     final hasValidBg = _isBloodGroupValid(bloodGroup);
     final donorDisplay = hasValidBg ? '$donorName ($bloodGroup)' : donorName;
 
-    final facilityName = donation['camp_name'] ??
+    final facilityName =
+        donation['camp_name'] ??
         donation['hospital_name'] ??
         (_activeDuty?['facility_name'] ?? 'Facility');
     final donationId = donation['donation_id'] ?? '';
@@ -379,9 +410,16 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFDCFCE7),
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF86EFAC), width: 3),
+                    border: Border.all(
+                      color: const Color(0xFF86EFAC),
+                      width: 3,
+                    ),
                   ),
-                  child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 38),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Color(0xFF16A34A),
+                    size: 38,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 const Text(
@@ -437,7 +475,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFFCBD5E1)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         onPressed: () {
@@ -459,7 +499,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFB71C1C),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
                         ),
@@ -494,7 +536,11 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     );
   }
 
-  Widget _buildReceiptRow(String label, String value, {bool highlight = false}) {
+  Widget _buildReceiptRow(
+    String label,
+    String value, {
+    bool highlight = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -519,7 +565,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: highlight ? const Color(0xFFB71C1C) : AppTheme.textPrimary,
+                color: highlight
+                    ? const Color(0xFFB71C1C)
+                    : AppTheme.textPrimary,
               ),
             ),
           ),
@@ -536,11 +584,17 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          _isOrgStaff ? 'Org Staff: Scan & Record' : 'Hospital Staff: Scan & Record',
+          _isOrgStaff
+              ? 'Org Staff: Scan & Record'
+              : 'Hospital Staff: Scan & Record',
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w800,
@@ -563,7 +617,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             ),
           if (_scannedDonor != null)
             IconButton(
-              icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryCrimson),
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: AppTheme.primaryCrimson,
+              ),
               tooltip: 'Scan Again',
               onPressed: _resetScanner,
             ),
@@ -609,9 +666,16 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
         ),
         child: const Row(
           children: [
-            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
             SizedBox(width: 10),
-            Text('Checking duty assignments...', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            Text(
+              'Checking duty assignments...',
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            ),
           ],
         ),
       );
@@ -628,7 +692,11 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Color(0xFFDC2626),
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -642,7 +710,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     }
 
     final isCamp = _isOrgStaff;
-    final facilityName = _activeDuty?['facility_name'] ?? (isCamp ? 'No ongoing camp assigned' : 'Hospital Blood Bank');
+    final facilityName =
+        _activeDuty?['facility_name'] ??
+        (isCamp ? 'No ongoing camp assigned' : 'Hospital Blood Bank');
     final venue = _activeDuty?['venue_or_addr'] ?? '';
     final status = _activeDuty?['status']?.toString().toLowerCase() ?? 'none';
     final hasOngoing = status == 'ongoing' || (!isCamp && status == 'active');
@@ -663,12 +733,16 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: hasOngoing ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+              color: hasOngoing
+                  ? const Color(0xFFDCFCE7)
+                  : const Color(0xFFFEE2E2),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               isCamp ? Icons.campaign_rounded : Icons.local_hospital_rounded,
-              color: hasOngoing ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+              color: hasOngoing
+                  ? const Color(0xFF16A34A)
+                  : const Color(0xFFDC2626),
               size: 20,
             ),
           ),
@@ -686,7 +760,9 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
-                          color: hasOngoing ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                          color: hasOngoing
+                              ? const Color(0xFF15803D)
+                              : const Color(0xFFB91C1C),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -694,13 +770,20 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: hasOngoing ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                        color: hasOngoing
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFDC2626),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        isCamp ? (hasOngoing ? 'FIELD DRIVE' : 'INACTIVE') : 'HOSPITAL',
+                        isCamp
+                            ? (hasOngoing ? 'FIELD DRIVE' : 'INACTIVE')
+                            : 'HOSPITAL',
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -765,7 +848,11 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             )
           else
             const Center(
-              child: Icon(Icons.camera_alt_outlined, color: Colors.white54, size: 64),
+              child: Icon(
+                Icons.camera_alt_outlined,
+                color: Colors.white54,
+                size: 64,
+              ),
             ),
 
           // Scanner Target Frame Overlay
@@ -773,7 +860,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             width: 210,
             height: 210,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 2),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.8),
+                width: 2,
+              ),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Stack(
@@ -786,10 +876,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     height: 28,
                     decoration: const BoxDecoration(
                       border: Border(
-                        top: BorderSide(color: AppTheme.primaryCrimson, width: 4),
-                        left: BorderSide(color: AppTheme.primaryCrimson, width: 4),
+                        top: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
+                        left: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
                       ),
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                      ),
                     ),
                   ),
                 ),
@@ -801,10 +899,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     height: 28,
                     decoration: const BoxDecoration(
                       border: Border(
-                        top: BorderSide(color: AppTheme.primaryCrimson, width: 4),
-                        right: BorderSide(color: AppTheme.primaryCrimson, width: 4),
+                        top: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
+                        right: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
                       ),
-                      borderRadius: BorderRadius.only(topRight: Radius.circular(16)),
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(16),
+                      ),
                     ),
                   ),
                 ),
@@ -816,10 +922,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     height: 28,
                     decoration: const BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: AppTheme.primaryCrimson, width: 4),
-                        left: BorderSide(color: AppTheme.primaryCrimson, width: 4),
+                        bottom: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
+                        left: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
                       ),
-                      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16)),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(16),
+                      ),
                     ),
                   ),
                 ),
@@ -831,10 +945,18 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     height: 28,
                     decoration: const BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: AppTheme.primaryCrimson, width: 4),
-                        right: BorderSide(color: AppTheme.primaryCrimson, width: 4),
+                        bottom: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
+                        right: BorderSide(
+                          color: AppTheme.primaryCrimson,
+                          width: 4,
+                        ),
                       ),
-                      borderRadius: BorderRadius.only(bottomRight: Radius.circular(16)),
+                      borderRadius: BorderRadius.only(
+                        bottomRight: Radius.circular(16),
+                      ),
                     ),
                   ),
                 ),
@@ -854,11 +976,19 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 16),
+                  Icon(
+                    Icons.qr_code_scanner_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     'Align Donor QR / Pass within frame',
-                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -892,12 +1022,15 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
     final isEligible = donor['is_eligible'] == true;
     final eligibilityMsg = donor['eligibility_message'] ?? '';
     final isAlreadyRecorded = donor['already_recorded'] == true;
-    final alreadyRecordedMsg = donor['already_recorded_message']?.toString() ??
+    final alreadyRecordedMsg =
+        donor['already_recorded_message']?.toString() ??
         (_isOrgStaff
             ? 'Blood donation already recorded from this donor for this camp.'
             : 'Blood donation already recorded from this donor today.');
     final lastDonation = donor['last_donation_date'] != null
-        ? DateFormat('yyyy-MM-dd').format(DateTime.parse(donor['last_donation_date'].toString()).toLocal())
+        ? DateFormat('yyyy-MM-dd').format(
+            DateTime.parse(donor['last_donation_date'].toString()).toLocal(),
+          )
         : 'Never Donated';
 
     return Container(
@@ -1015,7 +1148,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               children: [
                 if (isAlreadyRecorded)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF1F2),
                       borderRadius: BorderRadius.circular(16),
@@ -1060,20 +1196,31 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: isEligible ? const Color(0xFFF0FDF4) : const Color(0xFFFFFBEB),
+                      color: isEligible
+                          ? const Color(0xFFF0FDF4)
+                          : const Color(0xFFFFFBEB),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isEligible ? const Color(0xFFBBF7D0) : const Color(0xFFFDE68A),
+                        color: isEligible
+                            ? const Color(0xFFBBF7D0)
+                            : const Color(0xFFFDE68A),
                       ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          isEligible ? Icons.check_circle_outline_rounded : Icons.schedule_rounded,
-                          color: isEligible ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                          isEligible
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.schedule_rounded,
+                          color: isEligible
+                              ? const Color(0xFF16A34A)
+                              : const Color(0xFFD97706),
                           size: 22,
                         ),
                         const SizedBox(width: 12),
@@ -1082,22 +1229,30 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                isEligible ? 'Eligible to Donate' : 'Donation Interval Notice',
+                                isEligible
+                                    ? 'Eligible to Donate'
+                                    : 'Donation Interval Notice',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: isEligible ? const Color(0xFF166534) : const Color(0xFF92400E),
+                                  color: isEligible
+                                      ? const Color(0xFF166534)
+                                      : const Color(0xFF92400E),
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 eligibilityMsg.isNotEmpty
                                     ? eligibilityMsg
-                                    : (isEligible ? 'Donor meets standard donation interval criteria.' : 'Medical check recommended.'),
+                                    : (isEligible
+                                          ? 'Donor meets standard donation interval criteria.'
+                                          : 'Medical check recommended.'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: isEligible ? const Color(0xFF14532D) : const Color(0xFF78350F),
+                                  color: isEligible
+                                      ? const Color(0xFF14532D)
+                                      : const Color(0xFF78350F),
                                   height: 1.3,
                                 ),
                               ),
@@ -1182,14 +1337,22 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                       height: 52,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isLocked ? const Color(0xFF94A3B8) : const Color(0xFFB71C1C),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          backgroundColor: isLocked
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFFB71C1C),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           elevation: isLocked ? 0 : 2,
                         ),
                         icon: Icon(btnIcon, color: Colors.white, size: 22),
                         label: Text(
                           btnText,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                         onPressed: _openRecordDonationSheet,
                       ),
@@ -1203,13 +1366,22 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        icon: const Icon(Icons.history_rounded, size: 18, color: AppTheme.textPrimary),
+                        icon: const Icon(
+                          Icons.history_rounded,
+                          size: 18,
+                          color: AppTheme.textPrimary,
+                        ),
                         label: const Text(
                           'History',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
                         onPressed: () {
                           Navigator.of(context).push(
@@ -1228,13 +1400,22 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: AppTheme.primaryCrimson),
+                        icon: const Icon(
+                          Icons.qr_code_scanner_rounded,
+                          size: 18,
+                          color: AppTheme.primaryCrimson,
+                        ),
                         label: const Text(
                           'Scan Next',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.primaryCrimson),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryCrimson,
+                          ),
                         ),
                         onPressed: _resetScanner,
                       ),
@@ -1269,7 +1450,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textSecondary,
+                ),
               ),
               const SizedBox(height: 1),
               Text(
@@ -1323,10 +1507,16 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                   controller: _manualInputController,
                   decoration: InputDecoration(
                     hintText: 'Enter NIC or Pass ID',
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryCrimson),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: AppTheme.primaryCrimson,
+                    ),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -1337,7 +1527,10 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: AppTheme.primaryCrimson, width: 2),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primaryCrimson,
+                        width: 2,
+                      ),
                     ),
                   ),
                   onSubmitted: _verifyIdentifier,
@@ -1349,14 +1542,20 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB71C1C),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     elevation: 0,
                   ),
-                  onPressed: () => _verifyIdentifier(_manualInputController.text),
+                  onPressed: () =>
+                      _verifyIdentifier(_manualInputController.text),
                   child: const Text(
                     'Search',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -1373,12 +1572,19 @@ class _StaffScanQrScreenState extends State<StaffScanQrScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    color: Color(0xFFDC2626),
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _errorMessage!,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFFDC2626),
+                      ),
                     ),
                   ),
                 ],
@@ -1414,8 +1620,6 @@ class _RecordDonationModal extends StatefulWidget {
 
 class _RecordDonationModalState extends State<_RecordDonationModal> {
   int _selectedVolume = 450;
-  final TextEditingController _hbController = TextEditingController(text: '13.5');
-  final TextEditingController _bpController = TextEditingController(text: '120/80');
   final TextEditingController _storageController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
@@ -1426,7 +1630,10 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
   @override
   void initState() {
     super.initState();
-    final isCamp = (widget.staffUserData['role']?.toString().toUpperCase() ?? '').contains('ORG');
+    final isCamp =
+        (widget.staffUserData['role']?.toString().toUpperCase() ?? '').contains(
+          'ORG',
+        );
     if (isCamp) {
       _storageController.text = 'Field Cold Box Transport';
     } else {
@@ -1436,8 +1643,6 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
 
   @override
   void dispose() {
-    _hbController.dispose();
-    _bpController.dispose();
     _storageController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -1468,7 +1673,8 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
   }
 
   Future<void> _submitDonation() async {
-    final donorId = widget.scannedDonor['donor_id']?.toString() ??
+    final donorId =
+        widget.scannedDonor['donor_id']?.toString() ??
         widget.scannedDonor['id']?.toString() ??
         '';
 
@@ -1476,9 +1682,6 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
       setState(() => _modalError = 'Invalid donor ID');
       return;
     }
-
-    final hb = double.tryParse(_hbController.text.trim()) ?? 13.5;
-    final bp = _bpController.text.trim().isEmpty ? '120/80' : _bpController.text.trim();
 
     setState(() {
       _isSubmitting = true;
@@ -1491,8 +1694,8 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
         staffRole: _staffRole,
         donorId: donorId,
         volumeMl: _selectedVolume,
-        hemoglobinsLevel: hb,
-        bloodPressure: bp,
+        hemoglobinsLevel: 0,
+        bloodPressure: '',
         componentType: _componentType,
         status: 'COMPLETED',
         storageLocation: _storageController.text.trim(),
@@ -1518,7 +1721,9 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
     final hasValidBg = _isBloodGroupValid(rawBg);
     final bg = hasValidBg ? rawBg.trim() : '';
 
-    final facility = widget.activeDuty?['facility_name'] ?? (_isOrgStaff ? 'Field Camp' : 'Hospital Blood Bank');
+    final facility =
+        widget.activeDuty?['facility_name'] ??
+        (_isOrgStaff ? 'Field Camp' : 'Hospital Blood Bank');
 
     return Container(
       decoration: const BoxDecoration(
@@ -1611,7 +1816,9 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                           ),
                         const SizedBox(height: 2),
                         Text(
-                          _isOrgStaff ? 'Assigned Camp: $facility' : 'Facility: $facility',
+                          _isOrgStaff
+                              ? 'Assigned Camp: $facility'
+                              : 'Facility: $facility',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -1642,12 +1849,19 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Color(0xFFDC2626),
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               _modalError!,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFFDC2626),
+                              ),
                             ),
                           ),
                         ],
@@ -1659,7 +1873,11 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                   // 1. Volume Section
                   const Text(
                     'Collected Blood Volume',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -1674,13 +1892,17 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppTheme.textPrimary,
                               ),
                             ),
                             selected: isSelected,
                             selectedColor: const Color(0xFFB71C1C),
                             backgroundColor: const Color(0xFFF1F5F9),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             onSelected: (val) {
                               if (val) setState(() => _selectedVolume = vol);
                             },
@@ -1692,73 +1914,19 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
 
                   const SizedBox(height: 20),
 
-                  // 2. Hemoglobin & Blood Pressure
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Hemoglobin (g/dL)',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                            ),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: _hbController,
-                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.opacity_rounded, size: 18, color: Color(0xFFB71C1C)),
-                                filled: true,
-                                fillColor: const Color(0xFFF8FAFC),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Blood Pressure',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
-                            ),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: _bpController,
-                              decoration: InputDecoration(
-                                hintText: '120/80',
-                                prefixIcon: const Icon(Icons.favorite_rounded, size: 18, color: Color(0xFFB71C1C)),
-                                filled: true,
-                                fillColor: const Color(0xFFF8FAFC),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'Hemoglobin and blood pressure come from the current doctor clearance. Staff record the collected volume and storage details.',
                   ),
-
                   const SizedBox(height: 18),
 
                   // 3. Component Type
                   const Text(
                     'Component Type',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Container(
@@ -1772,9 +1940,15 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                       child: DropdownButton<String>(
                         value: _componentType,
                         isExpanded: true,
-                        items: ['Whole Blood', 'Red Blood Cells', 'Platelets', 'Plasma'].map((c) {
-                          return DropdownMenuItem(value: c, child: Text(c));
-                        }).toList(),
+                        items:
+                            [
+                              'Whole Blood',
+                              'Red Blood Cells',
+                              'Platelets',
+                              'Plasma',
+                            ].map((c) {
+                              return DropdownMenuItem(value: c, child: Text(c));
+                            }).toList(),
                         onChanged: (val) {
                           if (val != null) setState(() => _componentType = val);
                         },
@@ -1787,17 +1961,30 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                   // 4. Storage Location
                   const Text(
                     'Storage / Transport Destination',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _storageController,
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.ac_unit_rounded, size: 18, color: Color(0xFFB71C1C)),
+                      prefixIcon: const Icon(
+                        Icons.ac_unit_rounded,
+                        size: 18,
+                        color: Color(0xFFB71C1C),
+                      ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -1814,7 +2001,9 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFB71C1C),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
                       ),
                       onPressed: _isSubmitting ? null : _submitDonation,
@@ -1822,11 +2011,18 @@ class _RecordDonationModalState extends State<_RecordDonationModal> {
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
                           : const Text(
                               'Confirm & Upload Donation Details',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                     ),
                   ),

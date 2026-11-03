@@ -9,10 +9,7 @@ import '../theme/app_theme.dart';
 class BloodCampsScreen extends StatefulWidget {
   final Map<String, dynamic>? initialUserData;
 
-  const BloodCampsScreen({
-    super.key,
-    this.initialUserData,
-  });
+  const BloodCampsScreen({super.key, this.initialUserData});
 
   @override
   State<BloodCampsScreen> createState() => _BloodCampsScreenState();
@@ -39,7 +36,8 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
   String? _errorMessage;
 
   int _currentPage = 1;
-  final int _pageSize = 4; // Paginated in small chunks for easy page-by-page browsing
+  final int _pageSize =
+      4; // Paginated in small chunks for easy page-by-page browsing
   int _totalCount = 0;
   int _totalPages = 1;
 
@@ -94,7 +92,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           orElse: () => {},
         );
         if (matchedProvince.isNotEmpty) {
-          _onProvinceSelected(userProvinceId, matchedProvince['province']?.toString(), defaultDistrictId: userDistrictId);
+          _onProvinceSelected(
+            userProvinceId,
+            matchedProvince['province']?.toString(),
+            defaultDistrictId: userDistrictId,
+          );
         }
       }
     } catch (e) {
@@ -129,7 +131,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
   }
 
   /// When Province changes
-  Future<void> _onProvinceSelected(String? provinceId, String? provinceName, {String? defaultDistrictId}) async {
+  Future<void> _onProvinceSelected(
+    String? provinceId,
+    String? provinceName, {
+    String? defaultDistrictId,
+  }) async {
     setState(() {
       _selectedProvinceId = provinceId;
       _selectedProvinceName = provinceName;
@@ -162,7 +168,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           orElse: () => {},
         );
         if (matchedDistrict.isNotEmpty) {
-          _onDistrictSelected(defaultDistrictId, matchedDistrict['district']?.toString());
+          _onDistrictSelected(
+            defaultDistrictId,
+            matchedDistrict['district']?.toString(),
+          );
           return;
         }
       }
@@ -171,9 +180,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
       _fetchCamps();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load districts: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load districts: $e')));
       _fetchCamps();
     }
   }
@@ -191,7 +200,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
   /// Fetch camps matching selected province, district, search text and page
   Future<void> _fetchCamps({int page = 1}) async {
     final search = _searchController.text.trim();
-    if (_selectedProvinceId == null && _selectedDistrictId == null && search.isEmpty) {
+    if (_selectedProvinceId == null &&
+        _selectedDistrictId == null &&
+        search.isEmpty) {
       setState(() {
         _camps = [];
         _totalCount = 0;
@@ -224,7 +235,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
 
       final total = res['total'] is int
           ? res['total'] as int
-          : (res['total'] is num ? (res['total'] as num).toInt() : activeCamps.length);
+          : (res['total'] is num
+                ? (res['total'] as num).toInt()
+                : activeCamps.length);
       final totalPages = res['total_pages'] is int
           ? res['total_pages'] as int
           : (total > 0 ? (total / _pageSize).ceil() : 1);
@@ -261,8 +274,12 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     final geo = camp['geo_location'];
     if (geo != null) {
       if (geo is Map) {
-        destLat = (geo['lat'] is num) ? (geo['lat'] as num).toDouble() : double.tryParse('${geo['lat']}');
-        destLng = (geo['lng'] is num) ? (geo['lng'] as num).toDouble() : double.tryParse('${geo['lng']}');
+        destLat = (geo['lat'] is num)
+            ? (geo['lat'] as num).toDouble()
+            : double.tryParse('${geo['lat']}');
+        destLng = (geo['lng'] is num)
+            ? (geo['lng'] as num).toDouble()
+            : double.tryParse('${geo['lng']}');
       } else if (geo is String && geo.isNotEmpty) {
         try {
           final decoded = jsonDecode(geo);
@@ -287,7 +304,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     if (destLat == null || destLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Coordinates are not available for this camp location.'),
+          content: Text(
+            'Coordinates are not available for this camp location.',
+          ),
           backgroundColor: AppTheme.errorRed,
         ),
       );
@@ -306,7 +325,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           child: Dialog(
             backgroundColor: Colors.white,
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
               child: Row(
@@ -317,7 +338,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                     height: 32,
                     child: CircularProgressIndicator(
                       strokeWidth: 3.2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryCrimson),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.primaryCrimson,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 18),
@@ -351,7 +374,8 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           if (permission == LocationPermission.denied) {
             permission = await Geolocator.requestPermission();
           }
-          if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+          if (permission == LocationPermission.whileInUse ||
+              permission == LocationPermission.always) {
             userPos = await Geolocator.getCurrentPosition(
               locationSettings: const LocationSettings(
                 accuracy: LocationAccuracy.medium,
@@ -410,8 +434,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     final city = camp['city'] ?? '';
     final postalCode = camp['postal_code'] ?? '';
     final status = camp['status'] ?? 'SCHEDULED';
-    final targetUnits = camp['target_units']?.toString() ?? '100';
-    final targetUnitType = (camp['target_unit_type'] ?? 'WHOLE_BLOOD').toString().replaceAll('_', ' ');
+    final targetUnits = camp['target_units']?.toString() ?? '—';
+    final targetUnitType = (camp['target_unit_type'] ?? 'WHOLE_BLOOD')
+        .toString()
+        .replaceAll('_', ' ');
 
     final startTimeStr = camp['start_time']?.toString();
     final endTimeStr = camp['end_time']?.toString();
@@ -466,7 +492,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     // Check confirmation status in background if not known
     void Function(void Function())? modalSetStateFn;
     if (campId.isNotEmpty && _donorIdentifier != null) {
-      ApiService.checkCampConfirmation(campId: campId, donorId: _donorIdentifier!).then((confirmed) {
+      ApiService.checkCampConfirmation(
+        campId: campId,
+        donorId: _donorIdentifier!,
+      ).then((confirmed) {
         if (mounted) {
           setState(() {
             if (confirmed) {
@@ -492,571 +521,687 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
             modalSetStateFn = setModalState;
-            final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
+            final isConfirmed =
+                _confirmedCampIds.contains(campId) ||
+                camp['confirmation_status'] == 'confirmed';
             return DraggableScrollableSheet(
-          initialChildSize: 0.85,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (_, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                children: [
-                  // Drag handle
-                  Center(
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 12, bottom: 8),
-                      width: 48,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(10),
+              initialChildSize: 0.85,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              builder: (_, scrollController) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Drag handle
+                      Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 12, bottom: 8),
+                          width: 48,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
 
-                  // Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: status == 'SCHEDULED'
-                                      ? AppTheme.successBackground
-                                      : AppTheme.warningBackground,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  status,
-                                  style: TextStyle(
-                                    color: status == 'SCHEDULED'
-                                        ? AppTheme.successGreen
-                                        : AppTheme.warningAmber,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
+                      // Header
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: status == 'SCHEDULED'
+                                          ? AppTheme.successBackground
+                                          : AppTheme.warningBackground,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      status,
+                                      style: TextStyle(
+                                        color: status == 'SCHEDULED'
+                                            ? AppTheme.successGreen
+                                            : AppTheme.warningAmber,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    campName,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textPrimary,
+                                      height: 1.25,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                campName,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppTheme.textPrimary,
-                                  height: 1.25,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded, color: AppTheme.textSecondary),
-                          onPressed: () => Navigator.of(ctx).pop(),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const Divider(height: 1),
-
-                  // Body Content
-                  Expanded(
-                    child: ListView(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                      children: [
-                        // Date & Time Box
-                        _buildDetailSection(
-                          icon: Icons.calendar_month_rounded,
-                          iconColor: AppTheme.primaryCrimson,
-                          title: 'Date & Timing',
-                          child: Text(
-                            formattedTime,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.textPrimary,
-                              height: 1.4,
                             ),
-                          ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: AppTheme.textSecondary,
+                              ),
+                              onPressed: () => Navigator.of(ctx).pop(),
+                            ),
+                          ],
                         ),
+                      ),
 
-                        const SizedBox(height: 16),
+                      const Divider(height: 1),
 
-                        // Venue & Location
-                        _buildDetailSection(
-                          icon: Icons.location_on_rounded,
-                          iconColor: const Color(0xFF0284C7),
-                          title: 'Venue & Location',
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                venueName,
+                      // Body Content
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                          children: [
+                            // Date & Time Box
+                            _buildDetailSection(
+                              icon: Icons.calendar_month_rounded,
+                              iconColor: AppTheme.primaryCrimson,
+                              title: 'Date & Timing',
+                              child: Text(
+                                formattedTime,
                                 style: const TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: AppTheme.textPrimary,
+                                  height: 1.4,
                                 ),
                               ),
-                              if (address.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  address,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: AppTheme.textSecondary,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Venue & Location
+                            _buildDetailSection(
+                              icon: Icons.location_on_rounded,
+                              iconColor: const Color(0xFF0284C7),
+                              title: 'Venue & Location',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    venueName,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.textPrimary,
+                                    ),
                                   ),
-                                ),
-                              ],
-                              const SizedBox(height: 4),
-                              Text(
-                                [
-                                  if (city.isNotEmpty) city,
-                                  if (districtObj?['district'] != null) districtObj!['district'],
-                                  if (provinceObj?['province'] != null) '${provinceObj!['province']} Province',
-                                  if (postalCode.isNotEmpty) 'Postal: $postalCode',
-                                ].join(' • '),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppTheme.textMuted,
+                                  if (address.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      address,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    [
+                                      if (city.isNotEmpty) city,
+                                      if (districtObj?['district'] != null)
+                                        districtObj!['district'],
+                                      if (provinceObj?['province'] != null)
+                                        '${provinceObj!['province']} Province',
+                                      if (postalCode.isNotEmpty)
+                                        'Postal: $postalCode',
+                                    ].join(' • '),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Target Units & Needs
+                            _buildDetailSection(
+                              icon: Icons.water_drop_rounded,
+                              iconColor: AppTheme.primaryCrimson,
+                              title: 'Collection Target',
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.primaryLight,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.favorite_rounded,
+                                          size: 18,
+                                          color: AppTheme.primaryCrimson,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '$targetUnits Units Target',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppTheme.primaryCrimson,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Chip(
+                                    label: Text(targetUnitType),
+                                    backgroundColor: const Color(0xFFF1F5F9),
+                                    labelStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            if (bloodTypes.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              _buildDetailSection(
+                                icon: Icons.bloodtype_rounded,
+                                iconColor: const Color(0xFFDC2626),
+                                title: 'Preferred Blood Types',
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: bloodTypes.map((bt) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: AppTheme.borderSubtle,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        bt,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                          color: AppTheme.primaryCrimson,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               ),
                             ],
-                          ),
-                        ),
 
-                        const SizedBox(height: 16),
-
-                        // Target Units & Needs
-                        _buildDetailSection(
-                          icon: Icons.water_drop_rounded,
-                          iconColor: AppTheme.primaryCrimson,
-                          title: 'Collection Target',
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primaryLight,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Row(
+                            // Hospital & Organizers
+                            if (hospital != null || organization != null) ...[
+                              const SizedBox(height: 16),
+                              _buildDetailSection(
+                                icon: Icons.local_hospital_rounded,
+                                iconColor: const Color(0xFF16A34A),
+                                title: 'Organizing Partners',
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(Icons.favorite_rounded, size: 18, color: AppTheme.primaryCrimson),
-                                    const SizedBox(width: 8),
+                                    if (hospital != null) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.business_rounded,
+                                            size: 16,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              hospital['name'] ??
+                                                  'Associated Hospital',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppTheme.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                    ],
+                                    if (organization != null) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.groups_rounded,
+                                            size: 16,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              organization['legal_name'] ??
+                                                  'Supporting Organization',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppTheme.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+
+                            // Contact Person
+                            if (contactPerson != null) ...[
+                              const SizedBox(height: 16),
+                              _buildDetailSection(
+                                icon: Icons.person_pin_rounded,
+                                iconColor: const Color(0xFF8B5CF6),
+                                title: 'Camp Coordinator',
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (contactPerson['name'] != null)
+                                      Text(
+                                        contactPerson['name'].toString(),
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.textPrimary,
+                                        ),
+                                      ),
+                                    if (contactPerson['phone'] != null) ...[
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.phone_rounded,
+                                            size: 14,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            contactPerson['phone'].toString(),
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: AppTheme.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                    if (contactPerson['email'] != null) ...[
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.email_outlined,
+                                            size: 14,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            contactPerson['email'].toString(),
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: AppTheme.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: 24),
+
+                            // Confirm / Cancel Participation Action Buttons
+                            if (isConfirmed) ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.successBackground,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: AppTheme.successGreen.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppTheme.successGreen,
+                                      size: 22,
+                                    ),
+                                    SizedBox(width: 8),
                                     Text(
-                                      '$targetUnits Units Target',
-                                      style: const TextStyle(
-                                        fontSize: 14,
+                                      'Participation Confirmed',
+                                      style: TextStyle(
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w700,
-                                        color: AppTheme.primaryCrimson,
+                                        color: AppTheme.successGreen,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Chip(
-                                label: Text(targetUnitType),
-                                backgroundColor: const Color(0xFFF1F5F9),
-                                labelStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: _isCancelling
+                                    ? null
+                                    : () async {
+                                        final donorId = _donorIdentifier;
+                                        if (campId.isEmpty || donorId == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Please log in with a valid donor profile to cancel participation.',
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.errorRed,
+                                            ),
+                                          );
+                                          return;
+                                        }
 
-                        if (bloodTypes.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          _buildDetailSection(
-                            icon: Icons.bloodtype_rounded,
-                            iconColor: const Color(0xFFDC2626),
-                            title: 'Preferred Blood Types',
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: bloodTypes.map((bt) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppTheme.borderSubtle),
-                                  ),
-                                  child: Text(
-                                    bt,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                      color: AppTheme.primaryCrimson,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
+                                        setModalState(() {
+                                          _isCancelling = true;
+                                        });
 
-                        // Hospital & Organizers
-                        if (hospital != null || organization != null) ...[
-                          const SizedBox(height: 16),
-                          _buildDetailSection(
-                            icon: Icons.local_hospital_rounded,
-                            iconColor: const Color(0xFF16A34A),
-                            title: 'Organizing Partners',
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (hospital != null) ...[
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.business_rounded, size: 16, color: AppTheme.textSecondary),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          hospital['name'] ?? 'Associated Hospital',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppTheme.textPrimary,
-                                          ),
+                                        try {
+                                          await ApiService.cancelCampVisit(
+                                            campId: campId,
+                                            donorId: donorId,
+                                          );
+
+                                          if (!mounted) return;
+                                          setModalState(() {
+                                            _confirmedCampIds.remove(campId);
+                                            _isCancelling = false;
+                                          });
+                                          setState(() {
+                                            _confirmedCampIds.remove(campId);
+                                            camp['confirmation_status'] =
+                                                'cancelled';
+                                          });
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Participation cancelled for $campName',
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.warningAmber,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        } catch (e) {
+                                          if (!mounted) return;
+                                          setModalState(() {
+                                            _isCancelling = false;
+                                          });
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to cancel participation: $e',
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.errorRed,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                icon: _isCancelling
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppTheme.errorRed,
                                         ),
+                                      )
+                                    : const Icon(
+                                        Icons.cancel_outlined,
+                                        size: 22,
+                                        color: AppTheme.errorRed,
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                ],
-                                if (organization != null) ...[
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.groups_rounded, size: 16, color: AppTheme.textSecondary),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          organization['legal_name'] ?? 'Supporting Organization',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppTheme.textPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-
-                        // Contact Person
-                        if (contactPerson != null) ...[
-                          const SizedBox(height: 16),
-                          _buildDetailSection(
-                            icon: Icons.person_pin_rounded,
-                            iconColor: const Color(0xFF8B5CF6),
-                            title: 'Camp Coordinator',
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (contactPerson['name'] != null)
-                                  Text(
-                                    contactPerson['name'].toString(),
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textPrimary,
-                                    ),
-                                  ),
-                                if (contactPerson['phone'] != null) ...[
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.phone_rounded, size: 14, color: AppTheme.textSecondary),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        contactPerson['phone'].toString(),
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                                if (contactPerson['email'] != null) ...[
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.email_outlined, size: 14, color: AppTheme.textSecondary),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        contactPerson['email'].toString(),
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: AppTheme.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 24),
-
-                        // Confirm / Cancel Participation Action Buttons
-                        if (isConfirmed) ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppTheme.successBackground,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: AppTheme.successGreen.withValues(alpha: 0.3)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 22),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Participation Confirmed',
-                                  style: TextStyle(
-                                    fontSize: 15,
+                                label: Text(
+                                  _isCancelling
+                                      ? 'Cancelling...'
+                                      : 'Cancel Participation',
+                                  style: const TextStyle(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: AppTheme.successGreen,
+                                    color: AppTheme.errorRed,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: _isCancelling
-                                ? null
-                                : () async {
-                                    final donorId = _donorIdentifier;
-                                    if (campId.isEmpty || donorId == null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Please log in with a valid donor profile to cancel participation.'),
-                                          backgroundColor: AppTheme.errorRed,
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: AppTheme.errorRed,
+                                    width: 1.5,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ] else ...[
+                              ElevatedButton.icon(
+                                onPressed: _isConfirming
+                                    ? null
+                                    : () async {
+                                        final donorId = _donorIdentifier;
+                                        if (campId.isEmpty || donorId == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Please log in with a valid donor profile to confirm participation.',
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.errorRed,
+                                            ),
+                                          );
+                                          return;
+                                        }
+
+                                        setModalState(() {
+                                          _isConfirming = true;
+                                        });
+
+                                        try {
+                                          await ApiService.confirmCampVisit(
+                                            campId: campId,
+                                            donorId: donorId,
+                                          );
+
+                                          if (!mounted) return;
+                                          setModalState(() {
+                                            _confirmedCampIds.add(campId);
+                                            _isConfirming = false;
+                                          });
+                                          setState(() {
+                                            _confirmedCampIds.add(campId);
+                                            camp['confirmation_status'] =
+                                                'confirmed';
+                                          });
+
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Participation confirmed for $campName!',
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.successGreen,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        } catch (e) {
+                                          if (!mounted) return;
+                                          setModalState(() {
+                                            _isConfirming = false;
+                                          });
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to confirm participation: $e',
+                                              ),
+                                              backgroundColor:
+                                                  AppTheme.errorRed,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                icon: _isConfirming
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
                                         ),
-                                      );
-                                      return;
-                                    }
+                                      )
+                                    : const Icon(
+                                        Icons.how_to_reg_rounded,
+                                        size: 22,
+                                      ),
+                                label: Text(
+                                  _isConfirming
+                                      ? 'Confirming...'
+                                      : 'Confirm Participation',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF059669),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
 
-                                    setModalState(() {
-                                      _isCancelling = true;
-                                    });
-
-                                    try {
-                                      await ApiService.cancelCampVisit(
-                                        campId: campId,
-                                        donorId: donorId,
-                                      );
-
-                                      if (!mounted) return;
-                                      setModalState(() {
-                                        _confirmedCampIds.remove(campId);
-                                        _isCancelling = false;
-                                      });
-                                      setState(() {
-                                        _confirmedCampIds.remove(campId);
-                                        camp['confirmation_status'] = 'cancelled';
-                                      });
-
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Participation cancelled for $campName'),
-                                          backgroundColor: AppTheme.warningAmber,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      setModalState(() {
-                                        _isCancelling = false;
-                                      });
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Failed to cancel participation: $e'),
-                                          backgroundColor: AppTheme.errorRed,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    }
-                                  },
-                            icon: _isCancelling
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppTheme.errorRed,
-                                    ),
-                                  )
-                                : const Icon(Icons.cancel_outlined, size: 22, color: AppTheme.errorRed),
-                            label: Text(
-                              _isCancelling ? 'Cancelling...' : 'Cancel Participation',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.errorRed,
+                            // Prominent Google Maps Live Directions Button
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                _openDirectionsInGoogleMaps(camp);
+                              },
+                              icon: const Icon(
+                                Icons.directions_rounded,
+                                size: 22,
+                              ),
+                              label: const Text(
+                                'Get Live Directions (Google Maps)',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryCrimson,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
                               ),
                             ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppTheme.errorRed, width: 1.5),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ] else ...[
-                          ElevatedButton.icon(
-                            onPressed: _isConfirming
-                                ? null
-                                : () async {
-                                    final donorId = _donorIdentifier;
-                                    if (campId.isEmpty || donorId == null) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Please log in with a valid donor profile to confirm participation.'),
-                                          backgroundColor: AppTheme.errorRed,
-                                        ),
-                                      );
-                                      return;
-                                    }
-
-                                    setModalState(() {
-                                      _isConfirming = true;
-                                    });
-
-                                    try {
-                                      await ApiService.confirmCampVisit(
-                                        campId: campId,
-                                        donorId: donorId,
-                                      );
-
-                                      if (!mounted) return;
-                                      setModalState(() {
-                                        _confirmedCampIds.add(campId);
-                                        _isConfirming = false;
-                                      });
-                                      setState(() {
-                                        _confirmedCampIds.add(campId);
-                                        camp['confirmation_status'] = 'confirmed';
-                                      });
-
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Participation confirmed for $campName!'),
-                                          backgroundColor: AppTheme.successGreen,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      setModalState(() {
-                                        _isConfirming = false;
-                                      });
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Failed to confirm participation: $e'),
-                                          backgroundColor: AppTheme.errorRed,
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    }
-                                  },
-                            icon: _isConfirming
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.how_to_reg_rounded, size: 22),
-                            label: Text(
-                              _isConfirming ? 'Confirming...' : 'Confirm Participation',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF059669),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-
-                        // Prominent Google Maps Live Directions Button
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            _openDirectionsInGoogleMaps(camp);
-                          },
-                          icon: const Icon(Icons.directions_rounded, size: 22),
-                          label: const Text(
-                            'Get Live Directions (Google Maps)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryCrimson,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         );
       },
     );
-  },
-);
-}
+  }
 
   Widget _buildDetailSection({
     required IconData icon,
@@ -1120,7 +1265,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                 // Top Notification/Instruction Message
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryLight,
                     borderRadius: BorderRadius.circular(12),
@@ -1130,7 +1278,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.info_outline_rounded, color: AppTheme.primaryCrimson, size: 20),
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: AppTheme.primaryCrimson,
+                        size: 20,
+                      ),
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -1162,27 +1314,44 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                       // Province Dropdown
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          value: _selectedProvinceId,
+                          initialValue: _selectedProvinceId,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: 'Province',
-                            labelStyle: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                            prefixIcon: const Icon(Icons.map_outlined, size: 20, color: AppTheme.primaryCrimson),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            labelStyle: const TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textSecondary,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.map_outlined,
+                              size: 20,
+                              color: AppTheme.primaryCrimson,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          hint: const Text('Choose Province', style: TextStyle(fontSize: 13)),
+                          hint: const Text(
+                            'Choose Province',
+                            style: TextStyle(fontSize: 13),
+                          ),
                           items: _provinces.map((p) {
                             final id = p['id']?.toString() ?? '';
-                            final name = p['province']?.toString() ?? 'Province';
+                            final name =
+                                p['province']?.toString() ?? 'Province';
                             return DropdownMenuItem<String>(
                               value: id,
                               child: Text(
                                 name,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             );
                           }).toList(),
@@ -1191,7 +1360,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                               (p) => p['id']?.toString() == val,
                               orElse: () => {},
                             );
-                            _onProvinceSelected(val, match['province']?.toString());
+                            _onProvinceSelected(
+                              val,
+                              match['province']?.toString(),
+                            );
                           },
                         ),
                       ),
@@ -1201,19 +1373,31 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                       // District Dropdown
                       Expanded(
                         child: DropdownButtonFormField<String?>(
-                          value: _selectedDistrictId,
+                          initialValue: _selectedDistrictId,
                           isExpanded: true,
                           decoration: InputDecoration(
                             labelText: 'District',
-                            labelStyle: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
-                            prefixIcon: const Icon(Icons.location_city_rounded, size: 20, color: AppTheme.primaryCrimson),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            labelStyle: const TextStyle(
+                              fontSize: 13,
+                              color: AppTheme.textSecondary,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.location_city_rounded,
+                              size: 20,
+                              color: AppTheme.primaryCrimson,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           hint: Text(
-                            _selectedProvinceId == null ? 'Select Province' : 'All Districts',
+                            _selectedProvinceId == null
+                                ? 'Select Province'
+                                : 'All Districts',
                             style: const TextStyle(fontSize: 13),
                           ),
                           items: [
@@ -1222,18 +1406,26 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                                 value: null,
                                 child: Text(
                                   'All Districts',
-                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.primaryCrimson),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.primaryCrimson,
+                                  ),
                                 ),
                               ),
                             ..._districts.map((d) {
                               final id = d['id']?.toString() ?? '';
-                              final name = d['district']?.toString() ?? 'District';
+                              final name =
+                                  d['district']?.toString() ?? 'District';
                               return DropdownMenuItem<String?>(
                                 value: id,
                                 child: Text(
                                   name,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               );
                             }),
@@ -1248,7 +1440,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                                       (d) => d['id']?.toString() == val,
                                       orElse: () => {},
                                     );
-                                    _onDistrictSelected(val, match['district']?.toString());
+                                    _onDistrictSelected(
+                                      val,
+                                      match['district']?.toString(),
+                                    );
                                   }
                                 },
                         ),
@@ -1263,8 +1458,15 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search camps by name, venue or city...',
-                    hintStyle: const TextStyle(fontSize: 13.5, color: AppTheme.textMuted),
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 22),
+                    hintStyle: const TextStyle(
+                      fontSize: 13.5,
+                      color: AppTheme.textMuted,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: AppTheme.textSecondary,
+                      size: 22,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear_rounded, size: 18),
@@ -1274,16 +1476,23 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                             },
                           )
                         : null,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.borderSubtle),
+                      borderSide: const BorderSide(
+                        color: AppTheme.borderSubtle,
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.borderSubtle),
+                      borderSide: const BorderSide(
+                        color: AppTheme.borderSubtle,
+                      ),
                     ),
                   ),
                   onSubmitted: (_) => _fetchCamps(page: 1),
@@ -1298,9 +1507,7 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           const Divider(height: 1, color: AppTheme.borderSubtle),
 
           // Camps List & Pagination Body
-          Expanded(
-            child: _buildCampsBody(),
-          ),
+          Expanded(child: _buildCampsBody()),
 
           // Pagination Bar (page 1, 2, 3...)
           if (_selectedProvinceId != null && _totalCount > 0)
@@ -1378,12 +1585,19 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 48, color: AppTheme.errorRed),
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: AppTheme.errorRed,
+              ),
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -1407,7 +1621,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.event_busy_rounded, size: 54, color: AppTheme.textMuted),
+              const Icon(
+                Icons.event_busy_rounded,
+                size: 54,
+                color: AppTheme.textMuted,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'No Blood Camps Found',
@@ -1447,7 +1665,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
             child: Row(
               children: [
-                const Icon(Icons.place_rounded, size: 16, color: AppTheme.primaryCrimson),
+                const Icon(
+                  Icons.place_rounded,
+                  size: 16,
+                  color: AppTheme.primaryCrimson,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   'Showing camps in $filterDescription',
@@ -1488,8 +1710,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     final campName = camp['camp_name'] ?? 'Blood Donation Camp';
     final venueName = camp['venue_name'] ?? 'Venue';
     final city = camp['city'] ?? '';
-    final targetUnits = camp['target_units']?.toString() ?? '100';
-    final targetUnitType = (camp['target_unit_type'] ?? 'WHOLE_BLOOD').toString().replaceAll('_', ' ');
+    final targetUnits = camp['target_units']?.toString() ?? '—';
+    final targetUnitType = (camp['target_unit_type'] ?? 'WHOLE_BLOOD')
+        .toString()
+        .replaceAll('_', ' ');
 
     String formattedDate = '';
     String formattedTime = '';
@@ -1511,9 +1735,13 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
     } catch (_) {}
 
     final hospital = camp['hospital'] as Map<String, dynamic>?;
-    final organizerName = hospital?['name'] ?? (camp['organization'] as Map<String, dynamic>?)?['legal_name'];
+    final organizerName =
+        hospital?['name'] ??
+        (camp['organization'] as Map<String, dynamic>?)?['legal_name'];
     final campId = camp['id']?.toString() ?? '';
-    final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
+    final isConfirmed =
+        _confirmedCampIds.contains(campId) ||
+        camp['confirmation_status'] == 'confirmed';
 
     return Material(
       color: Colors.white,
@@ -1539,7 +1767,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.successBackground,
                           borderRadius: BorderRadius.circular(8),
@@ -1547,7 +1778,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_circle_rounded, size: 14, color: AppTheme.successGreen),
+                            Icon(
+                              Icons.check_circle_rounded,
+                              size: 14,
+                              color: AppTheme.successGreen,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'SCHEDULED',
@@ -1563,7 +1798,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                       if (isConfirmed) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFDCFCE7),
                             borderRadius: BorderRadius.circular(8),
@@ -1572,7 +1810,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_rounded, size: 13, color: Color(0xFF15803D)),
+                              Icon(
+                                Icons.check_rounded,
+                                size: 13,
+                                color: Color(0xFF15803D),
+                              ),
                               SizedBox(width: 3),
                               Text(
                                 'Participation Confirmed',
@@ -1589,7 +1831,10 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryLight,
                       borderRadius: BorderRadius.circular(8),
@@ -1624,7 +1869,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
               // Venue & Location
               Row(
                 children: [
-                  const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF0284C7)),
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 16,
+                    color: Color(0xFF0284C7),
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -1647,7 +1896,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
               if (formattedDate.isNotEmpty)
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded, size: 16, color: AppTheme.textSecondary),
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 16,
+                      color: AppTheme.textSecondary,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       '$formattedDate • $formattedTime',
@@ -1663,7 +1916,11 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.medical_services_outlined, size: 16, color: AppTheme.textMuted),
+                    const Icon(
+                      Icons.medical_services_outlined,
+                      size: 16,
+                      color: AppTheme.textMuted,
+                    ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -1701,23 +1958,35 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                       TextButton.icon(
                         style: TextButton.styleFrom(
                           foregroundColor: const Color(0xFF0284C7),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         onPressed: () => _openDirectionsInGoogleMaps(camp),
                         icon: const Icon(Icons.directions_rounded, size: 17),
-                        label: const Text('Directions', style: TextStyle(fontWeight: FontWeight.w700)),
+                        label: const Text(
+                          'Directions',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                       const SizedBox(width: 4),
                       TextButton.icon(
                         style: TextButton.styleFrom(
                           foregroundColor: AppTheme.primaryCrimson,
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         onPressed: () => _showCampDetailsModal(camp),
                         icon: const Icon(Icons.info_outline_rounded, size: 17),
-                        label: const Text('Details', style: TextStyle(fontWeight: FontWeight.w700)),
+                        label: const Text(
+                          'Details',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ],
                   ),
@@ -1763,7 +2032,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                       height: 36,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: isCurrent ? AppTheme.primaryCrimson : const Color(0xFFF1F5F9),
+                        color: isCurrent
+                            ? AppTheme.primaryCrimson
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(8),
                         border: isCurrent
                             ? null
@@ -1774,7 +2045,9 @@ class _BloodCampsScreenState extends State<BloodCampsScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: isCurrent ? Colors.white : AppTheme.textPrimary,
+                          color: isCurrent
+                              ? Colors.white
+                              : AppTheme.textPrimary,
                         ),
                       ),
                     ),

@@ -6,10 +6,7 @@ import '../theme/app_theme.dart';
 class DonorProfileScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const DonorProfileScreen({
-    super.key,
-    required this.userData,
-  });
+  const DonorProfileScreen({super.key, required this.userData});
 
   @override
   State<DonorProfileScreen> createState() => _DonorProfileScreenState();
@@ -68,7 +65,8 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
   }
 
   String _resolveUserId() {
-    final uid = _profile['user_id'] ??
+    final uid =
+        _profile['user_id'] ??
         widget.userData['user_id'] ??
         widget.userData['id'] ??
         widget.userData['donor_id'] ??
@@ -120,7 +118,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
 
       // Gender
       final rawGender = _profile['gender']?.toString().toUpperCase();
-      if (rawGender == 'MALE' || rawGender == 'FEMALE' || rawGender == 'OTHER') {
+      if (rawGender == 'MALE' ||
+          rawGender == 'FEMALE' ||
+          rawGender == 'OTHER') {
         _gender = rawGender;
       } else {
         _gender = null;
@@ -140,14 +140,15 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
 
       // If province selected, load its districts
       if (_selectedProvinceId != null && _selectedProvinceId!.isNotEmpty) {
-        final provExists = _provinces.any((p) => p['id']?.toString() == _selectedProvinceId);
+        final provExists = _provinces.any(
+          (p) => p['id']?.toString() == _selectedProvinceId,
+        );
         if (provExists) {
           await _fetchDistricts(_selectedProvinceId!, preserveSelection: true);
         } else {
           _selectedProvinceId = null;
         }
       }
-
 
       if (mounted) {
         setState(() {
@@ -164,7 +165,10 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
     }
   }
 
-  Future<void> _fetchDistricts(String provinceId, {bool preserveSelection = false}) async {
+  Future<void> _fetchDistricts(
+    String provinceId, {
+    bool preserveSelection = false,
+  }) async {
     setState(() {
       _isLoadingDistricts = true;
       if (!preserveSelection) {
@@ -180,7 +184,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
           _isLoadingDistricts = false;
           // Validate existing selection
           if (preserveSelection && _selectedDistrictId != null) {
-            final exists = _districts.any((d) => d['id']?.toString() == _selectedDistrictId);
+            final exists = _districts.any(
+              (d) => d['id']?.toString() == _selectedDistrictId,
+            );
             if (!exists) _selectedDistrictId = null;
           }
         });
@@ -207,7 +213,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(1940),
-      lastDate: DateTime.now().subtract(const Duration(days: 365 * 16)), // At least 16 yrs
+      lastDate: DateTime.now().subtract(
+        const Duration(days: 365 * 16),
+      ), // At least 16 yrs
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -260,10 +268,7 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
     setState(() => _isSaving = true);
 
     try {
-      await ApiService.requestOTP(
-        phone: newPhone,
-        purpose: 'phone_change',
-      );
+      await ApiService.requestOTP(phone: newPhone, purpose: 'phone_change');
 
       if (!mounted) return;
       setState(() => _isSaving = false);
@@ -369,8 +374,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded,
-                            color: AppTheme.primaryCrimson, size: 20),
+                        const Icon(
+                          Icons.info_outline_rounded,
+                          color: AppTheme.primaryCrimson,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: RichText(
@@ -382,12 +390,18 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                               ),
                               children: [
                                 const TextSpan(
-                                    text: 'A 6-digit verification code was sent to '),
+                                  text:
+                                      'A 6-digit verification code was sent to ',
+                                ),
                                 TextSpan(
                                   text: newPhone,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                const TextSpan(text: '. Enter it below to save changes.'),
+                                const TextSpan(
+                                  text: '. Enter it below to save changes.',
+                                ),
                               ],
                             ),
                           ),
@@ -398,7 +412,10 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                   const SizedBox(height: 20),
                   if (dialogError != null) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
                         color: AppTheme.errorBackground,
@@ -406,8 +423,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded,
-                              color: AppTheme.errorRed, size: 18),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: AppTheme.errorRed,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -458,7 +478,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: isVerifying ? null : () => Navigator.pop(modalContext),
+                          onPressed: isVerifying
+                              ? null
+                              : () => Navigator.pop(modalContext),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -478,7 +500,8 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                                   final code = otpController.text.trim();
                                   if (code.length != 6) {
                                     setModalState(() {
-                                      dialogError = 'Please enter all 6 digits of the OTP';
+                                      dialogError =
+                                          'Please enter all 6 digits of the OTP';
                                     });
                                     return;
                                   }
@@ -586,7 +609,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
           SnackBar(
             backgroundColor: AppTheme.successGreen,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             content: const Row(
               children: [
                 Icon(Icons.check_circle_rounded, color: Colors.white),
@@ -631,7 +656,6 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
         Navigator.pop(context, _profile);
       },
       child: Scaffold(
-
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
           title: const Text('My Profile'),
@@ -649,211 +673,216 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                 ),
               )
             : _errorMessage != null
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline_rounded,
-                              size: 48, color: AppTheme.errorRed),
-                          const SizedBox(height: 12),
-                          Text(
-                            _errorMessage!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: AppTheme.textPrimary),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: _loadInitialData,
-                            icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Try Again'),
-                          ),
-                        ],
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: AppTheme.errorRed,
                       ),
-                    ),
-                  )
-                : SafeArea(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 12),
+                      Text(
+                        _errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppTheme.textPrimary),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _loadInitialData,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Try Again'),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Profile Avatar & Badges Header
+                        _buildHeaderCard(),
+                        const SizedBox(height: 20),
+
+                        // Clinically Locked Fields (NIC & Blood Group)
+                        _buildImmutableInfoSection(),
+                        const SizedBox(height: 24),
+
+                        // Editable Personal Info
+                        const Text(
+                          'Personal Information',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // First Name & Last Name
+                        Row(
                           children: [
-                            // Profile Avatar & Badges Header
-                            _buildHeaderCard(),
-                            const SizedBox(height: 20),
-
-                            // Clinically Locked Fields (NIC & Blood Group)
-                            _buildImmutableInfoSection(),
-                            const SizedBox(height: 24),
-
-                            // Editable Personal Info
-                            const Text(
-                              'Personal Information',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _firstNameController,
+                                label: 'First Name',
+                                icon: Icons.person_outline_rounded,
+                                validator: (val) {
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'Required';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                            const SizedBox(height: 12),
-
-                            // First Name & Last Name
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _firstNameController,
-                                    label: 'First Name',
-                                    icon: Icons.person_outline_rounded,
-                                    validator: (val) {
-                                      if (val == null || val.trim().isEmpty) {
-                                        return 'Required';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _lastNameController,
-                                    label: 'Last Name',
-                                    icon: Icons.person_outline_rounded,
-                                    validator: (val) {
-                                      if (val == null || val.trim().isEmpty) {
-                                        return 'Required';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Phone Number with Change Warning
-                            _buildPhoneField(),
-                            const SizedBox(height: 16),
-
-                            // Date of Birth & Gender
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildDatePickerField(),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildGenderDropdown(),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Location & Address
-                            const Text(
-                              'Residential Location',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _lastNameController,
+                                label: 'Last Name',
+                                icon: Icons.person_outline_rounded,
+                                validator: (val) {
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'Required';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                            const SizedBox(height: 12),
-
-                            // Province Dropdown
-                            _buildProvinceDropdown(),
-                            const SizedBox(height: 14),
-
-                            // District Dropdown
-                            _buildDistrictDropdown(),
-                            const SizedBox(height: 14),
-
-                            // Address
-                            _buildTextField(
-                              controller: _addressController,
-                              label: 'Street Address',
-                              icon: Icons.home_outlined,
-                              maxLines: 2,
-                            ),
-                            const SizedBox(height: 32),
-
-                            // Save Button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: _isSaving ? null : _handleSavePressed,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryCrimson,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  elevation: 2,
-                                ),
-                                child: _isSaving
-                                    ? const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.5,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            'Saving changes...',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            _isPhoneChanged
-                                                ? Icons.lock_clock_rounded
-                                                : Icons.check_circle_outline_rounded,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            _isPhoneChanged
-                                                ? 'Verify Phone & Save Profile'
-                                                : 'Save Profile Changes',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
                           ],
                         ),
-                      ),
+                        const SizedBox(height: 16),
+
+                        // Phone Number with Change Warning
+                        _buildPhoneField(),
+                        const SizedBox(height: 16),
+
+                        // Date of Birth & Gender
+                        Row(
+                          children: [
+                            Expanded(child: _buildDatePickerField()),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildGenderDropdown()),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Location & Address
+                        const Text(
+                          'Residential Location',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Province Dropdown
+                        _buildProvinceDropdown(),
+                        const SizedBox(height: 14),
+
+                        // District Dropdown
+                        _buildDistrictDropdown(),
+                        const SizedBox(height: 14),
+
+                        // Address
+                        _buildTextField(
+                          controller: _addressController,
+                          label: 'Street Address',
+                          icon: Icons.home_outlined,
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Save Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _isSaving ? null : _handleSavePressed,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryCrimson,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 2,
+                            ),
+                            child: _isSaving
+                                ? const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        'Saving changes...',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        _isPhoneChanged
+                                            ? Icons.lock_clock_rounded
+                                            : Icons
+                                                  .check_circle_outline_rounded,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _isPhoneChanged
+                                            ? 'Verify Phone & Save Profile'
+                                            : 'Save Profile Changes',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                     ),
                   ),
+                ),
+              ),
       ),
     );
   }
 
   Widget _buildHeaderCard() {
-    final username = _profile['username'] ?? widget.userData['username'] ?? 'Donor';
+    final username =
+        _profile['username'] ?? widget.userData['username'] ?? 'Donor';
     final qrRef = _profile['qr_ref'] ?? widget.userData['qr_ref'] ?? 'BC-SL';
-    final livesSaved = _profile['saved_lives']?.toString() ?? '9';
-    final isVerified = _profile['is_verified'] == true ||
+    final livesSaved = _profile['saved_lives']?.toString() ?? '0';
+    final isVerified =
+        _profile['is_verified'] == true ||
         _profile['is_verified'] == 1 ||
         _profile['is_verified']?.toString().toLowerCase() == 'true';
 
@@ -915,7 +944,10 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                     ),
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: isVerified
                             ? Colors.green.shade600.withValues(alpha: 0.9)
@@ -923,7 +955,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        isVerified ? '✓ Verified Donor' : '⏳ Pending Verification',
+                        isVerified
+                            ? '✓ Verified Donor'
+                            : '⏳ Pending Verification',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -940,9 +974,17 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildHeaderStat('Blood Group', _bloodType ?? 'Not Set', Icons.water_drop_rounded),
+              _buildHeaderStat(
+                'Blood Group',
+                _bloodType ?? 'Not Set',
+                Icons.water_drop_rounded,
+              ),
               Container(width: 1, height: 28, color: Colors.white24),
-              _buildHeaderStat('Impact Score', '$livesSaved Lives Saved', Icons.health_and_safety_rounded),
+              _buildHeaderStat(
+                'Impact Score',
+                '$livesSaved Impact score',
+                Icons.health_and_safety_rounded,
+              ),
             ],
           ),
         ],
@@ -1023,7 +1065,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.badge_outlined, size: 16, color: Color(0xFF64748B)),
+                          Icon(
+                            Icons.badge_outlined,
+                            size: 16,
+                            color: Color(0xFF64748B),
+                          ),
                           SizedBox(width: 6),
                           Text(
                             'National ID (NIC)',
@@ -1037,7 +1083,9 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _nic != null && _nic!.isNotEmpty ? _nic! : 'Not Provided',
+                        _nic != null && _nic!.isNotEmpty
+                            ? _nic!
+                            : 'Not Provided',
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -1047,7 +1095,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                       const SizedBox(height: 4),
                       const Row(
                         children: [
-                          Icon(Icons.lock_rounded, size: 12, color: Color(0xFF94A3B8)),
+                          Icon(
+                            Icons.lock_rounded,
+                            size: 12,
+                            color: Color(0xFF94A3B8),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Cannot be changed',
@@ -1079,8 +1131,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.bloodtype_rounded,
-                              size: 16, color: AppTheme.primaryCrimson),
+                          Icon(
+                            Icons.bloodtype_rounded,
+                            size: 16,
+                            color: AppTheme.primaryCrimson,
+                          ),
                           SizedBox(width: 6),
                           Text(
                             'Blood Group',
@@ -1106,7 +1161,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                       const SizedBox(height: 4),
                       const Row(
                         children: [
-                          Icon(Icons.lock_rounded, size: 12, color: Color(0xFF94A3B8)),
+                          Icon(
+                            Icons.lock_rounded,
+                            size: 12,
+                            color: Color(0xFF94A3B8),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Cannot be changed',
@@ -1146,7 +1205,10 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
         prefixIcon: Icon(icon, color: AppTheme.textSecondary, size: 20),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -1157,7 +1219,10 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.primaryCrimson, width: 1.8),
+          borderSide: const BorderSide(
+            color: AppTheme.primaryCrimson,
+            width: 1.8,
+          ),
         ),
       ),
     );
@@ -1183,14 +1248,20 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
           style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
           decoration: InputDecoration(
             labelText: 'Phone Number',
-            prefixIcon: const Icon(Icons.phone_outlined,
-                color: AppTheme.textSecondary, size: 20),
+            prefixIcon: const Icon(
+              Icons.phone_outlined,
+              color: AppTheme.textSecondary,
+              size: 20,
+            ),
             suffixIcon: _isPhoneChanged
                 ? Tooltip(
                     message: 'OTP verification required',
                     child: Container(
                       margin: const EdgeInsets.all(8),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
                         borderRadius: BorderRadius.circular(8),
@@ -1198,7 +1269,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.shield_rounded, size: 14, color: Color(0xFFD97706)),
+                          Icon(
+                            Icons.shield_rounded,
+                            size: 14,
+                            color: Color(0xFFD97706),
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Needs OTP',
@@ -1212,12 +1287,17 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                       ),
                     ),
                   )
-                : const Icon(Icons.check_circle_rounded,
-                    color: AppTheme.successGreen, size: 20),
+                : const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppTheme.successGreen,
+                    size: 20,
+                  ),
             filled: true,
             fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -1225,13 +1305,18 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: _isPhoneChanged ? const Color(0xFFF59E0B) : const Color(0xFFE2E8F0),
+                color: _isPhoneChanged
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFFE2E8F0),
                 width: _isPhoneChanged ? 1.5 : 1.0,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.primaryCrimson, width: 1.8),
+              borderSide: const BorderSide(
+                color: AppTheme.primaryCrimson,
+                width: 1.8,
+              ),
             ),
           ),
         ),
@@ -1239,7 +1324,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
           const SizedBox(height: 6),
           const Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFFD97706)),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: Color(0xFFD97706),
+              ),
               SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -1275,8 +1364,11 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today_rounded,
-                color: AppTheme.textSecondary, size: 18),
+            const Icon(
+              Icons.calendar_today_rounded,
+              color: AppTheme.textSecondary,
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -1284,7 +1376,10 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                 children: [
                   const Text(
                     'Date of Birth',
-                    style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -1357,15 +1452,22 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
           isExpanded: true,
           hint: const Row(
             children: [
-              Icon(Icons.location_city_rounded,
-                  color: AppTheme.textSecondary, size: 18),
+              Icon(
+                Icons.location_city_rounded,
+                color: AppTheme.textSecondary,
+                size: 18,
+              ),
               SizedBox(width: 10),
-              Text('Select Province', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+              Text(
+                'Select Province',
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+              ),
             ],
           ),
           items: _provinces.map((prov) {
             final id = prov['id']?.toString() ?? '';
-            final name = prov['province']?.toString() ??
+            final name =
+                prov['province']?.toString() ??
                 prov['name']?.toString() ??
                 prov['province_name']?.toString() ??
                 '';
@@ -1419,15 +1521,25 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
                 isExpanded: true,
                 hint: const Row(
                   children: [
-                    Icon(Icons.map_outlined,
-                        color: AppTheme.textSecondary, size: 18),
+                    Icon(
+                      Icons.map_outlined,
+                      color: AppTheme.textSecondary,
+                      size: 18,
+                    ),
                     SizedBox(width: 10),
-                    Text('Select District', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary)),
+                    Text(
+                      'Select District',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
                   ],
                 ),
                 items: _districts.map((dist) {
                   final id = dist['id']?.toString() ?? '';
-                  final name = dist['district']?.toString() ??
+                  final name =
+                      dist['district']?.toString() ??
                       dist['name']?.toString() ??
                       dist['district_name']?.toString() ??
                       '';
@@ -1452,5 +1564,4 @@ class _DonorProfileScreenState extends State<DonorProfileScreen> {
             ),
     );
   }
-
 }

@@ -11,10 +11,7 @@ import '../theme/app_theme.dart';
 class DonationCampMapScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const DonationCampMapScreen({
-    super.key,
-    required this.userData,
-  });
+  const DonationCampMapScreen({super.key, required this.userData});
 
   @override
   State<DonationCampMapScreen> createState() => _DonationCampMapScreenState();
@@ -31,230 +28,6 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     const LatLng(10.3, 82.5),
   );
   static const LatLng _sriLankaCenter = LatLng(7.8731, 80.7718);
-
-  // Fallback Verified Sri Lanka Donation Camps (ensures pins are always visible)
-  static final List<Map<String, dynamic>> _fallbackCamps = [
-    {
-      'id': 'd174d930-8acf-4d82-b413-350e9c730ec9',
-      'camp_name': 'National Blood Drive 2026 - Colombo Town Hall',
-      'venue_name': 'Colombo Town Hall Auditorium',
-      'address': 'F. R. Senanayake Mawatha, Colombo 07',
-      'city': 'Colombo',
-      'status': 'SCHEDULED',
-      'target_units': 200,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '6.9147,79.8653',
-      'geo_location': {'lat': 6.9147, 'lng': 79.8653},
-      'start_time': '2026-11-10T09:00:00+05:30',
-      'end_time': '2026-11-10T17:00:00+05:30',
-      'district': {'district': 'Colombo'},
-      'province': {'province': 'Western'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+', 'O-', 'A-', 'B-', 'AB-'],
-      'contact_person': {
-        'name': 'Dr. Anura Jayasinghe',
-        'phone': '+94771234567',
-        'email': 'anura.j@redcross.lk',
-      },
-    },
-    {
-      'id': 'bae86081-9f7a-41e1-8ee0-4a3489c88de1',
-      'camp_name': 'Youth For Life Blood Campaign - BMICH',
-      'venue_name': 'BMICH Exhibition Hall B',
-      'address': 'Bauddhaloka Mawatha, Colombo 07',
-      'city': 'Colombo',
-      'status': 'SCHEDULED',
-      'target_units': 180,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '6.9010,79.8735',
-      'geo_location': {'lat': 6.9010, 'lng': 79.8735},
-      'start_time': '2026-11-12T09:00:00+05:30',
-      'end_time': '2026-11-12T16:00:00+05:30',
-      'district': {'district': 'Colombo'},
-      'province': {'province': 'Western'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Rtr. Kavindu Perera',
-        'phone': '+94773456789',
-        'email': 'kavindu@rotaract3220.org',
-      },
-    },
-    {
-      'id': '37f783ba-af7c-475a-8533-04c4f5d8d3a3',
-      'camp_name': 'Negombo Coastal Community Blood Camp',
-      'venue_name': 'Negombo Municipal Council Ground Hall',
-      'address': 'Beach Road, Negombo',
-      'city': 'Gampaha',
-      'status': 'SCHEDULED',
-      'target_units': 120,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '7.2088,79.8358',
-      'geo_location': {'lat': 7.2088, 'lng': 79.8358},
-      'start_time': '2026-11-04T09:00:00+05:30',
-      'end_time': '2026-11-04T15:00:00+05:30',
-      'district': {'district': 'Gampaha'},
-      'province': {'province': 'Western'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Rotarian Sunil Fernando',
-        'phone': '+94712223344',
-        'email': 'sunil@rotarycolombo.org',
-      },
-    },
-    {
-      'id': 'c37f9ece-bbf9-4a76-929e-5b66950c6f56',
-      'camp_name': 'Kandy Hills Annual Blood Drive',
-      'venue_name': 'Kandy City Centre Level 3 Auditorium',
-      'address': 'Dalada Veediya, Kandy',
-      'city': 'Kandy',
-      'status': 'SCHEDULED',
-      'target_units': 250,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '7.2936,80.6350',
-      'geo_location': {'lat': 7.2936, 'lng': 80.6350},
-      'start_time': '2026-11-08T09:00:00+05:30',
-      'end_time': '2026-11-08T17:00:00+05:30',
-      'district': {'district': 'Kandy'},
-      'province': {'province': 'Central'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Lion Dr. Mahesh Bandara',
-        'phone': '+94778901234',
-        'email': 'mahesh.b@lionsdist306.lk',
-      },
-    },
-    {
-      'id': '512cbf61-8748-4c9a-b74c-66066fa6eae8',
-      'camp_name': 'Southern Pearl Blood Donation Drive',
-      'venue_name': 'Galle Fort Community Center',
-      'address': 'Church Street, Galle Fort',
-      'city': 'Galle',
-      'status': 'SCHEDULED',
-      'target_units': 150,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '6.0329,80.2168',
-      'geo_location': {'lat': 6.0329, 'lng': 80.2168},
-      'start_time': '2026-11-14T09:00:00+05:30',
-      'end_time': '2026-11-14T15:00:00+05:30',
-      'district': {'district': 'Galle'},
-      'province': {'province': 'Southern'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Chathura De Silva',
-        'phone': '+94765432100',
-        'email': 'chathura@sarvodaya.org',
-      },
-    },
-    {
-      'id': '9bf1cdba-d9d7-459c-b833-66f450deab30',
-      'camp_name': 'Northern Hope Blood Camp - Jaffna',
-      'venue_name': 'Jaffna Central College Memorial Hall',
-      'address': 'Central College Road, Jaffna',
-      'city': 'Jaffna',
-      'status': 'SCHEDULED',
-      'target_units': 140,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '9.6647,80.0167',
-      'geo_location': {'lat': 9.6647, 'lng': 80.0167},
-      'start_time': '2026-11-18T09:00:00+05:30',
-      'end_time': '2026-11-18T16:00:00+05:30',
-      'district': {'district': 'Jaffna'},
-      'province': {'province': 'Northern'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Leo Tharmalingam Sivakumar',
-        'phone': '+94776543219',
-        'email': 'sivakumar@leo306a1.lk',
-      },
-    },
-    {
-      'id': '01697996-1d11-41cf-ba10-2a06112ee616',
-      'camp_name': 'Rajarata Life Saver Camp - Anuradhapura',
-      'venue_name': 'Public Library Hall, Anuradhapura',
-      'address': 'Main Street, Anuradhapura',
-      'city': 'Anuradhapura',
-      'status': 'SCHEDULED',
-      'target_units': 160,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '8.3314,80.4037',
-      'geo_location': {'lat': 8.3314, 'lng': 80.4037},
-      'start_time': '2026-11-20T09:00:00+05:30',
-      'end_time': '2026-11-20T17:00:00+05:30',
-      'district': {'district': 'Anuradhapura'},
-      'province': {'province': 'North Central'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Scout Leader Nimal Rathnayake',
-        'phone': '+94718889900',
-        'email': 'nimal@slscout.org',
-      },
-    },
-    {
-      'id': '3b7f3488-76d2-4419-a0a8-6a6fe10f8a96',
-      'camp_name': 'Wayamba Regional Blood Camp - Kurunegala',
-      'venue_name': 'Kurunegala Town Hall Auditorium',
-      'address': 'Negombo Road, Kurunegala',
-      'city': 'Kurunegala',
-      'status': 'SCHEDULED',
-      'target_units': 130,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '7.4863,80.3623',
-      'geo_location': {'lat': 7.4863, 'lng': 80.3623},
-      'start_time': '2026-11-22T09:00:00+05:30',
-      'end_time': '2026-11-22T15:00:00+05:30',
-      'district': {'district': 'Kurunegala'},
-      'province': {'province': 'North Western'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Priyantha Alwis',
-        'phone': '+94779991122',
-        'email': 'priyantha@ymcasrilanka.org',
-      },
-    },
-    {
-      'id': '4e306b51-f2df-4104-963d-3508ba7297ab',
-      'camp_name': 'Eastern Sunshine Blood Drive - Batticaloa',
-      'venue_name': 'Batticaloa Municipal Pavilion',
-      'address': 'Bar Road, Batticaloa',
-      'city': 'Batticaloa',
-      'status': 'SCHEDULED',
-      'target_units': 120,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '7.7170,81.7000',
-      'geo_location': {'lat': 7.7170, 'lng': 81.7000},
-      'start_time': '2026-11-25T09:00:00+05:30',
-      'end_time': '2026-11-25T16:00:00+05:30',
-      'district': {'district': 'Batticaloa'},
-      'province': {'province': 'Eastern'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Mohamed Rameez',
-        'phone': '+94754443322',
-        'email': 'rameez@redcrescent.lk',
-      },
-    },
-    {
-      'id': '28633cc7-799c-40f2-b425-23919891dc34',
-      'camp_name': 'Uva Highlands Emergency Blood Drive - Badulla',
-      'venue_name': 'Badulla Simon Pieris Memorial Hall',
-      'address': 'Lower Street, Badulla',
-      'city': 'Badulla',
-      'status': 'SCHEDULED',
-      'target_units': 150,
-      'target_unit_type': 'WHOLE_BLOOD',
-      'location': '6.9934,81.0550',
-      'geo_location': {'lat': 6.9934, 'lng': 81.0550},
-      'start_time': '2026-11-28T09:00:00+05:30',
-      'end_time': '2026-11-28T17:00:00+05:30',
-      'district': {'district': 'Badulla'},
-      'province': {'province': 'Uva'},
-      'preferred_blood_types': ['A+', 'B+', 'O+', 'AB+'],
-      'contact_person': {
-        'name': 'Officer Damith Jayakody',
-        'phone': '+94772221199',
-        'email': 'damith@stjohn.lk',
-      },
-    },
-  ];
 
   // State
   bool _isLoading = true;
@@ -310,8 +83,8 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-populate with fallback active camps so pins appear immediately
-    _allCamps = _fallbackCamps.where((camp) => _isCampActive(camp)).toList();
+    // Start empty until authentic API records arrive.
+    _allCamps = <Map<String, dynamic>>[];
     _filteredCamps = List.from(_allCamps);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -335,16 +108,14 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
       final res = await ApiService.getBloodCamps(
         limit: 100,
         donorId: _donorIdentifier,
-      ).timeout(
-        const Duration(seconds: 5),
-      );
+      ).timeout(const Duration(seconds: 5));
       final rawData = res['data'] as List<dynamic>? ?? [];
       final parsed = rawData
           .map((e) => Map<String, dynamic>.from(e as Map))
           .where((camp) => _isCampActive(camp) && _getCampLatLng(camp) != null)
           .toList();
 
-      if (parsed.isNotEmpty && mounted) {
+      if (mounted) {
         setState(() {
           _allCamps = parsed;
           _filteredCamps = parsed;
@@ -357,13 +128,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
           }
           _isLoading = false;
         });
-      } else if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     } catch (_) {
-      // If network fails or times out, fallback camps already populate the map
+      // Keep the map empty when the API is unavailable.
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -450,8 +217,12 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     final geo = camp['geo_location'];
     if (geo != null) {
       if (geo is Map) {
-        lat = (geo['lat'] is num) ? (geo['lat'] as num).toDouble() : double.tryParse('${geo['lat']}');
-        lng = (geo['lng'] is num) ? (geo['lng'] as num).toDouble() : double.tryParse('${geo['lng']}');
+        lat = (geo['lat'] is num)
+            ? (geo['lat'] as num).toDouble()
+            : double.tryParse('${geo['lat']}');
+        lng = (geo['lng'] is num)
+            ? (geo['lng'] as num).toDouble()
+            : double.tryParse('${geo['lng']}');
       } else if (geo is String && geo.isNotEmpty) {
         try {
           final decoded = jsonDecode(geo);
@@ -466,8 +237,12 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     if (lat == null || lng == null) {
       final loc = camp['location'];
       if (loc is Map) {
-        lat = (loc['lat'] is num) ? (loc['lat'] as num).toDouble() : double.tryParse('${loc['lat']}');
-        lng = (loc['lng'] is num) ? (loc['lng'] as num).toDouble() : double.tryParse('${loc['lng']}');
+        lat = (loc['lat'] is num)
+            ? (loc['lat'] as num).toDouble()
+            : double.tryParse('${loc['lat']}');
+        lng = (loc['lng'] is num)
+            ? (loc['lng'] as num).toDouble()
+            : double.tryParse('${loc['lng']}');
       } else if (loc != null) {
         final locStr = loc.toString();
         if (locStr.contains(',')) {
@@ -488,7 +263,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     final q = query.trim().toLowerCase();
     setState(() {
       if (q.isEmpty) {
-        _filteredCamps = _allCamps.where((camp) => _isCampActive(camp)).toList();
+        _filteredCamps = _allCamps
+            .where((camp) => _isCampActive(camp))
+            .toList();
       } else {
         _filteredCamps = _allCamps.where((camp) {
           if (!_isCampActive(camp)) return false;
@@ -496,16 +273,18 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
           final venue = (camp['venue_name'] ?? '').toString().toLowerCase();
           final city = (camp['city'] ?? '').toString().toLowerCase();
           final address = (camp['address'] ?? '').toString().toLowerCase();
-          final district = (camp['district'] is Map
-                  ? camp['district']['district']
-                  : camp['district'] ?? '')
-              .toString()
-              .toLowerCase();
-          final province = (camp['province'] is Map
-                  ? camp['province']['province']
-                  : camp['province'] ?? '')
-              .toString()
-              .toLowerCase();
+          final district =
+              (camp['district'] is Map
+                      ? camp['district']['district']
+                      : camp['district'] ?? '')
+                  .toString()
+                  .toLowerCase();
+          final province =
+              (camp['province'] is Map
+                      ? camp['province']['province']
+                      : camp['province'] ?? '')
+                  .toString()
+                  .toLowerCase();
           return name.contains(q) ||
               venue.contains(q) ||
               city.contains(q) ||
@@ -535,7 +314,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
 
   void _checkConfirmationStatus(String campId) {
     if (campId.isEmpty || _donorIdentifier == null) return;
-    ApiService.checkCampConfirmation(campId: campId, donorId: _donorIdentifier!).then((confirmed) {
+    ApiService.checkCampConfirmation(
+      campId: campId,
+      donorId: _donorIdentifier!,
+    ).then((confirmed) {
       if (mounted) {
         setState(() {
           if (confirmed) {
@@ -545,7 +327,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
             }
           } else {
             _confirmedCampIds.remove(campId);
-            if (_selectedCamp != null && _selectedCamp!['id'] == campId && _selectedCamp!['confirmation_status'] == 'confirmed') {
+            if (_selectedCamp != null &&
+                _selectedCamp!['id'] == campId &&
+                _selectedCamp!['confirmation_status'] == 'confirmed') {
               _selectedCamp!['confirmation_status'] = 'cancelled';
             }
           }
@@ -571,7 +355,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Could not obtain device location. Ensure GPS is enabled.'),
+            content: Text(
+              'Could not obtain device location. Ensure GPS is enabled.',
+            ),
             duration: Duration(seconds: 2),
           ),
         );
@@ -591,7 +377,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     if (campId.isEmpty || donorId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please log in with a valid donor profile to confirm participation.'),
+          content: Text(
+            'Please log in with a valid donor profile to confirm participation.',
+          ),
           backgroundColor: AppTheme.errorRed,
         ),
       );
@@ -606,10 +394,7 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     });
 
     try {
-      await ApiService.confirmCampVisit(
-        campId: campId,
-        donorId: donorId,
-      );
+      await ApiService.confirmCampVisit(campId: campId, donorId: donorId);
 
       if (!mounted) return;
       _confirmedCampIds.add(campId);
@@ -659,7 +444,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     if (campId.isEmpty || donorId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please log in with a valid donor profile to cancel participation.'),
+          content: Text(
+            'Please log in with a valid donor profile to cancel participation.',
+          ),
           backgroundColor: AppTheme.errorRed,
         ),
       );
@@ -674,10 +461,7 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     });
 
     try {
-      await ApiService.cancelCampVisit(
-        campId: campId,
-        donorId: donorId,
-      );
+      await ApiService.cancelCampVisit(campId: campId, donorId: donorId);
 
       if (!mounted) return;
       _confirmedCampIds.remove(campId);
@@ -721,7 +505,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     if (dest == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Coordinates are not available for this camp location.'),
+          content: Text(
+            'Coordinates are not available for this camp location.',
+          ),
           backgroundColor: AppTheme.errorRed,
         ),
       );
@@ -740,7 +526,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
           child: Dialog(
             backgroundColor: Colors.white,
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
               child: Row(
@@ -751,7 +539,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                     height: 32,
                     child: CircularProgressIndicator(
                       strokeWidth: 3.2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryCrimson),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.primaryCrimson,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 18),
@@ -837,7 +627,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
   }
 
   String _formatCampTime(String? startStr, String? endStr) {
-    if (startStr == null || startStr.isEmpty) return 'Date & Time not specified';
+    if (startStr == null || startStr.isEmpty) {
+      return 'Date & Time not specified';
+    }
     try {
       final start = DateTime.parse(startStr).toLocal();
       final datePart = DateFormat('EEEE, dd MMMM yyyy').format(start);
@@ -861,8 +653,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     final city = camp['city']?.toString() ?? '';
     final postalCode = camp['postal_code']?.toString() ?? '';
     final status = camp['status']?.toString() ?? 'SCHEDULED';
-    final targetUnits = camp['target_units']?.toString() ?? '100';
-    final targetUnitType = (camp['target_unit_type'] ?? 'WHOLE_BLOOD').toString().replaceAll('_', ' ');
+    final targetUnits = camp['target_units']?.toString() ?? '—';
+    final targetUnitType = (camp['target_unit_type'] ?? 'WHOLE_BLOOD')
+        .toString()
+        .replaceAll('_', ' ');
 
     final startTimeStr = camp['start_time']?.toString();
     final endTimeStr = camp['end_time']?.toString();
@@ -907,7 +701,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
-            final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
+            final isConfirmed =
+                _confirmedCampIds.contains(campId) ||
+                camp['confirmation_status'] == 'confirmed';
 
             return DraggableScrollableSheet(
               initialChildSize: 0.85,
@@ -917,7 +713,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                 return Container(
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black26,
@@ -943,7 +741,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
 
                       // Header
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -954,12 +755,17 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                   Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: status == 'SCHEDULED'
                                               ? AppTheme.successBackground
                                               : AppTheme.warningBackground,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Text(
                                           status,
@@ -976,16 +782,27 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                       if (isConfirmed) ...[
                                         const SizedBox(width: 8),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFDCFCE7),
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: AppTheme.successGreen),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: AppTheme.successGreen,
+                                            ),
                                           ),
                                           child: const Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.check_circle_rounded, size: 14, color: AppTheme.successGreen),
+                                              Icon(
+                                                Icons.check_circle_rounded,
+                                                size: 14,
+                                                color: AppTheme.successGreen,
+                                              ),
                                               SizedBox(width: 4),
                                               Text(
                                                 'Confirmed',
@@ -1015,7 +832,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close_rounded, color: AppTheme.textSecondary),
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: AppTheme.textSecondary,
+                              ),
                               onPressed: () => Navigator.of(ctx).pop(),
                             ),
                           ],
@@ -1078,9 +898,12 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                   Text(
                                     [
                                       if (city.isNotEmpty) city,
-                                      if (districtObj?['district'] != null) districtObj!['district'],
-                                      if (provinceObj?['province'] != null) '${provinceObj!['province']} Province',
-                                      if (postalCode.isNotEmpty) 'Postal: $postalCode',
+                                      if (districtObj?['district'] != null)
+                                        districtObj!['district'],
+                                      if (provinceObj?['province'] != null)
+                                        '${provinceObj!['province']} Province',
+                                      if (postalCode.isNotEmpty)
+                                        'Postal: $postalCode',
                                     ].join(' • '),
                                     style: const TextStyle(
                                       fontSize: 12.5,
@@ -1102,14 +925,21 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                               child: Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: AppTheme.primaryLight,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.favorite_rounded, size: 18, color: AppTheme.primaryCrimson),
+                                        const Icon(
+                                          Icons.favorite_rounded,
+                                          size: 18,
+                                          color: AppTheme.primaryCrimson,
+                                        ),
                                         const SizedBox(width: 8),
                                         Text(
                                           '$targetUnits Units Target',
@@ -1147,11 +977,16 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                   runSpacing: 8,
                                   children: bloodTypes.map((bt) {
                                     return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: AppTheme.borderSubtle),
+                                        border: Border.all(
+                                          color: AppTheme.borderSubtle,
+                                        ),
                                       ),
                                       child: Text(
                                         bt,
@@ -1180,11 +1015,16 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                     if (hospital != null) ...[
                                       Row(
                                         children: [
-                                          const Icon(Icons.business_rounded, size: 16, color: AppTheme.textSecondary),
+                                          const Icon(
+                                            Icons.business_rounded,
+                                            size: 16,
+                                            color: AppTheme.textSecondary,
+                                          ),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              hospital['name'] ?? 'Associated Hospital',
+                                              hospital['name'] ??
+                                                  'Associated Hospital',
                                               style: const TextStyle(
                                                 fontSize: 13.5,
                                                 fontWeight: FontWeight.w600,
@@ -1199,11 +1039,16 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                     if (organization != null) ...[
                                       Row(
                                         children: [
-                                          const Icon(Icons.groups_rounded, size: 16, color: AppTheme.textSecondary),
+                                          const Icon(
+                                            Icons.groups_rounded,
+                                            size: 16,
+                                            color: AppTheme.textSecondary,
+                                          ),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              organization['legal_name'] ?? 'Supporting Organization',
+                                              organization['legal_name'] ??
+                                                  'Supporting Organization',
                                               style: const TextStyle(
                                                 fontSize: 13.5,
                                                 fontWeight: FontWeight.w600,
@@ -1242,14 +1087,19 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                       const SizedBox(height: 6),
                                       InkWell(
                                         onTap: () {
-                                          final phone = contactPerson?['phone'].toString();
+                                          final phone = contactPerson?['phone']
+                                              .toString();
                                           if (phone != null) {
                                             launchUrl(Uri.parse('tel:$phone'));
                                           }
                                         },
                                         child: Row(
                                           children: [
-                                            const Icon(Icons.phone_rounded, size: 15, color: Color(0xFF2563EB)),
+                                            const Icon(
+                                              Icons.phone_rounded,
+                                              size: 15,
+                                              color: Color(0xFF2563EB),
+                                            ),
                                             const SizedBox(width: 6),
                                             Text(
                                               contactPerson['phone'].toString(),
@@ -1267,14 +1117,21 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                       const SizedBox(height: 6),
                                       InkWell(
                                         onTap: () {
-                                          final email = contactPerson?['email'].toString();
+                                          final email = contactPerson?['email']
+                                              .toString();
                                           if (email != null) {
-                                            launchUrl(Uri.parse('mailto:$email'));
+                                            launchUrl(
+                                              Uri.parse('mailto:$email'),
+                                            );
                                           }
                                         },
                                         child: Row(
                                           children: [
-                                            const Icon(Icons.email_outlined, size: 15, color: Color(0xFF2563EB)),
+                                            const Icon(
+                                              Icons.email_outlined,
+                                              size: 15,
+                                              color: Color(0xFF2563EB),
+                                            ),
                                             const SizedBox(width: 6),
                                             Text(
                                               contactPerson['email'].toString(),
@@ -1298,16 +1155,27 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                             if (isConfirmed) ...[
                               Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppTheme.successBackground,
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: AppTheme.successGreen.withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                    color: AppTheme.successGreen.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
                                 ),
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 22),
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppTheme.successGreen,
+                                      size: 22,
+                                    ),
                                     SizedBox(width: 8),
                                     Text(
                                       'Participation Confirmed',
@@ -1325,7 +1193,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                 onPressed: _isCancelling
                                     ? null
                                     : () async {
-                                        await _handleCancelParticipation(camp, setModalState);
+                                        await _handleCancelParticipation(
+                                          camp,
+                                          setModalState,
+                                        );
                                       },
                                 icon: _isCancelling
                                     ? const SizedBox(
@@ -1336,9 +1207,15 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                           color: AppTheme.errorRed,
                                         ),
                                       )
-                                    : const Icon(Icons.cancel_outlined, size: 22, color: AppTheme.errorRed),
+                                    : const Icon(
+                                        Icons.cancel_outlined,
+                                        size: 22,
+                                        color: AppTheme.errorRed,
+                                      ),
                                 label: Text(
-                                  _isCancelling ? 'Cancelling...' : 'Cancel Participation',
+                                  _isCancelling
+                                      ? 'Cancelling...'
+                                      : 'Cancel Participation',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
@@ -1346,8 +1223,13 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: AppTheme.errorRed, width: 1.5),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(
+                                    color: AppTheme.errorRed,
+                                    width: 1.5,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
                                   ),
@@ -1359,7 +1241,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                 onPressed: _isConfirming
                                     ? null
                                     : () async {
-                                        await _handleConfirmParticipation(camp, setModalState);
+                                        await _handleConfirmParticipation(
+                                          camp,
+                                          setModalState,
+                                        );
                                       },
                                 icon: _isConfirming
                                     ? const SizedBox(
@@ -1370,9 +1255,14 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                           color: Colors.white,
                                         ),
                                       )
-                                    : const Icon(Icons.how_to_reg_rounded, size: 22),
+                                    : const Icon(
+                                        Icons.how_to_reg_rounded,
+                                        size: 22,
+                                      ),
                                 label: Text(
-                                  _isConfirming ? 'Confirming...' : 'Confirm Participation',
+                                  _isConfirming
+                                      ? 'Confirming...'
+                                      : 'Confirm Participation',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -1381,7 +1271,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF059669),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 15),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 15,
+                                  ),
                                   elevation: 2,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -1396,7 +1288,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                               onPressed: () {
                                 _openDirectionsInGoogleMaps(camp);
                               },
-                              icon: const Icon(Icons.directions_rounded, size: 22),
+                              icon: const Icon(
+                                Icons.directions_rounded,
+                                size: 22,
+                              ),
                               label: const Text(
                                 'Get Live Directions (Google Maps)',
                                 style: TextStyle(
@@ -1407,7 +1302,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryCrimson,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                ),
                                 elevation: 2,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
@@ -1472,12 +1369,14 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
     final venue = camp['venue_name']?.toString() ?? 'Venue';
     final city = camp['city']?.toString() ?? '';
     final status = camp['status']?.toString() ?? 'SCHEDULED';
-    final targetUnits = camp['target_units']?.toString() ?? '100';
+    final targetUnits = camp['target_units']?.toString() ?? '—';
     final startTime = camp['start_time']?.toString() ?? '';
     final endTime = camp['end_time']?.toString() ?? '';
     final campId = camp['id']?.toString() ?? '';
 
-    final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
+    final isConfirmed =
+        _confirmedCampIds.contains(campId) ||
+        camp['confirmation_status'] == 'confirmed';
 
     String timingSummary = '';
     if (startTime.isNotEmpty) {
@@ -1526,8 +1425,12 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  isConfirmed ? Icons.how_to_reg_rounded : Icons.bloodtype_rounded,
-                  color: isConfirmed ? AppTheme.successGreen : AppTheme.primaryCrimson,
+                  isConfirmed
+                      ? Icons.how_to_reg_rounded
+                      : Icons.bloodtype_rounded,
+                  color: isConfirmed
+                      ? AppTheme.successGreen
+                      : AppTheme.primaryCrimson,
                   size: 24,
                 ),
               ),
@@ -1539,7 +1442,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: status == 'SCHEDULED'
                                 ? AppTheme.successBackground
@@ -1560,7 +1466,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                         if (isConfirmed) ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(6),
@@ -1604,7 +1513,11 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
               ),
               IconButton(
                 visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.close_rounded, size: 20, color: AppTheme.textMuted),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: AppTheme.textMuted,
+                ),
                 onPressed: () {
                   setState(() {
                     _selectedCamp = null;
@@ -1620,7 +1533,11 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
           Row(
             children: [
               if (timingSummary.isNotEmpty) ...[
-                const Icon(Icons.schedule_rounded, size: 14, color: Color(0xFF2563EB)),
+                const Icon(
+                  Icons.schedule_rounded,
+                  size: 14,
+                  color: Color(0xFF2563EB),
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
@@ -1663,16 +1580,25 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 9,
+                      horizontal: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFDCFCE7),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppTheme.successGreen.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: AppTheme.successGreen.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 18),
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: AppTheme.successGreen,
+                          size: 18,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'Participation Confirmed',
@@ -1694,7 +1620,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.errorRed,
                     side: const BorderSide(color: AppTheme.errorRed),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -1703,11 +1632,17 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                       ? const SizedBox(
                           width: 14,
                           height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.errorRed),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.errorRed,
+                          ),
                         )
                       : const Text(
                           'Cancel',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                 ),
               ],
@@ -1732,12 +1667,18 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Icon(Icons.how_to_reg_rounded, size: 18),
                 label: Text(
                   _isConfirming ? 'Confirming...' : 'Confirm Participation',
-                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -1773,13 +1714,20 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   onPressed: () => _showCampFullDetailsModal(camp),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.textPrimary,
-                    side: const BorderSide(color: AppTheme.borderSubtle, width: 1.2),
+                    side: const BorderSide(
+                      color: AppTheme.borderSubtle,
+                      width: 1.2,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: const Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF2563EB)),
+                  icon: const Icon(
+                    Icons.info_outline_rounded,
+                    size: 18,
+                    color: Color(0xFF2563EB),
+                  ),
                   label: const Text(
                     'Full Details',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
@@ -1803,9 +1751,12 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
       final pos = _getCampLatLng(camp);
       if (pos == null) continue;
 
-      final isSelected = _selectedCamp != null && _selectedCamp!['id'] == camp['id'];
+      final isSelected =
+          _selectedCamp != null && _selectedCamp!['id'] == camp['id'];
       final campId = camp['id']?.toString() ?? '';
-      final isConfirmed = _confirmedCampIds.contains(campId) || camp['confirmation_status'] == 'confirmed';
+      final isConfirmed =
+          _confirmedCampIds.contains(campId) ||
+          camp['confirmation_status'] == 'confirmed';
 
       markers.add(
         Marker(
@@ -1824,7 +1775,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   decoration: BoxDecoration(
                     color: isConfirmed
                         ? const Color(0xFF059669)
-                        : (isSelected ? const Color(0xFF991B1B) : AppTheme.primaryCrimson),
+                        : (isSelected
+                              ? const Color(0xFF991B1B)
+                              : AppTheme.primaryCrimson),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: Colors.white,
@@ -1835,8 +1788,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                         color: isConfirmed
                             ? const Color(0xFF059669).withValues(alpha: 0.5)
                             : (isSelected
-                                ? AppTheme.primaryCrimson.withValues(alpha: 0.6)
-                                : Colors.black26),
+                                  ? AppTheme.primaryCrimson.withValues(
+                                      alpha: 0.6,
+                                    )
+                                  : Colors.black26),
                         blurRadius: isSelected ? 10 : 4,
                         offset: const Offset(0, 3),
                       ),
@@ -1844,7 +1799,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   ),
                   child: Center(
                     child: Icon(
-                      isConfirmed ? Icons.how_to_reg_rounded : Icons.bloodtype_rounded,
+                      isConfirmed
+                          ? Icons.how_to_reg_rounded
+                          : Icons.bloodtype_rounded,
                       color: Colors.white,
                       size: isSelected ? 26 : 22,
                     ),
@@ -1945,7 +1902,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryCrimson),
+            icon: const Icon(
+              Icons.refresh_rounded,
+              color: AppTheme.primaryCrimson,
+            ),
             tooltip: 'Refresh data',
             onPressed: _fetchCampsAndLocation,
           ),
@@ -2000,7 +1960,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                   onChanged: _onSearchChanged,
                   decoration: InputDecoration(
                     hintText: 'Search camp, venue, city, or district...',
-                    prefixIcon: const Icon(Icons.search, color: AppTheme.primaryCrimson),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppTheme.primaryCrimson,
+                    ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear, size: 20),
@@ -2012,7 +1975,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                         : null,
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide.none,
@@ -2030,7 +1996,10 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(20),
@@ -2064,9 +2033,17 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                     ),
                     if (_userLocation != null) ...[
                       const SizedBox(width: 6),
-                      Container(width: 1, height: 10, color: AppTheme.borderSubtle),
+                      Container(
+                        width: 1,
+                        height: 10,
+                        color: AppTheme.borderSubtle,
+                      ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.gps_fixed_rounded, size: 12, color: Color(0xFF2563EB)),
+                      const Icon(
+                        Icons.gps_fixed_rounded,
+                        size: 12,
+                        color: Color(0xFF2563EB),
+                      ),
                       const SizedBox(width: 3),
                       const Text(
                         'GPS',
@@ -2089,11 +2066,16 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
               top: _isSearchOpen ? 128 : 56,
               left: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 4),
+                  ],
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -2103,13 +2085,18 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                       height: 12,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryCrimson),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryCrimson,
+                        ),
                       ),
                     ),
                     SizedBox(width: 6),
                     Text(
                       'Syncing camps...',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -2145,7 +2132,9 @@ class _DonationCampMapScreenState extends State<DonationCampMapScreen> {
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF2563EB),
+                            ),
                           ),
                         )
                       : const Icon(Icons.my_location_rounded),

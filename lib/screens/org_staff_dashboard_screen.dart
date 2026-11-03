@@ -1,9 +1,11 @@
+import '../widgets/prana_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../services/session_service.dart';
 import '../theme/app_theme.dart';
-import 'donor_profile_screen.dart';
+import 'account_screen.dart';
+import 'notifications_screen.dart';
 import 'login_screen.dart';
 import 'staff_confirmed_donors_screen.dart';
 import 'staff_donor_history_screen.dart';
@@ -13,13 +15,11 @@ import 'staff_scan_qr_screen.dart';
 class OrgStaffDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const OrgStaffDashboardScreen({
-    super.key,
-    required this.userData,
-  });
+  const OrgStaffDashboardScreen({super.key, required this.userData});
 
   @override
-  State<OrgStaffDashboardScreen> createState() => _OrgStaffDashboardScreenState();
+  State<OrgStaffDashboardScreen> createState() =>
+      _OrgStaffDashboardScreenState();
 }
 
 class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
@@ -36,7 +36,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
   }
 
   String get _staffUserId {
-    return _userData['id']?.toString() ?? _userData['user_id']?.toString() ?? '';
+    return _userData['id']?.toString() ??
+        _userData['user_id']?.toString() ??
+        '';
   }
 
   Future<void> _loadOngoingCamp() async {
@@ -73,18 +75,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
   }
 
   Future<void> _openProfile(BuildContext context) async {
-    final updated = await Navigator.of(context).push<Map<String, dynamic>>(
-      MaterialPageRoute(
-        builder: (_) => DonorProfileScreen(userData: _userData),
-      ),
-    );
-
-    if (updated != null && mounted) {
-      setState(() {
-        _userData = Map<String, dynamic>.from(updated);
-      });
-      SessionService.updateUserData(_userData);
-    }
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
   }
 
   void _handleLogout(BuildContext context) {
@@ -98,8 +91,17 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
             Text('Confirm Logout'),
           ],
         ),
-        content: const Text('Are you sure you want to log out of the Organization Staff Portal?'),
+        content: const Text(
+          'Are you sure you want to log out of the Organization Staff Portal?',
+        ),
         actions: [
+          IconButton(
+            tooltip: 'Notifications',
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            ),
+          ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancel'),
@@ -146,69 +148,15 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
           titleSpacing: 16,
-          title: Row(
+          title: const Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFB71C1C), Color(0xFFE53935)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryCrimson.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+              PranaLogo(size: 36),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Prana · Camp staff',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                 ),
-                child: const Icon(
-                  Icons.campaign_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Blood',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.primaryCrimson,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const Text(
-                        'Connect',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Text(
-                    'Organization Staff Portal',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -216,17 +164,28 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
           actions: [
             IconButton(
               tooltip: 'Refresh Assignments',
-              icon: const Icon(Icons.refresh_rounded, color: AppTheme.primaryCrimson, size: 24),
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: AppTheme.primaryCrimson,
+                size: 24,
+              ),
               onPressed: _loadOngoingCamp,
             ),
             IconButton(
               tooltip: 'My Profile',
-              icon: const Icon(Icons.account_circle_outlined, color: AppTheme.primaryCrimson, size: 28),
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                color: AppTheme.primaryCrimson,
+                size: 28,
+              ),
               onPressed: () => _openProfile(context),
             ),
             IconButton(
               tooltip: 'Log Out',
-              icon: const Icon(Icons.logout_rounded, color: AppTheme.primaryCrimson),
+              icon: const Icon(
+                Icons.logout_rounded,
+                color: AppTheme.primaryCrimson,
+              ),
               onPressed: () => _handleLogout(context),
             ),
           ],
@@ -254,7 +213,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFB71C1C).withValues(alpha: 0.22),
+                          color: const Color(
+                            0xFFB71C1C,
+                          ).withValues(alpha: 0.22),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -269,7 +230,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                               radius: 26,
                               backgroundColor: Colors.white,
                               child: Text(
-                                username.isNotEmpty ? username[0].toUpperCase() : 'O',
+                                username.isNotEmpty
+                                    ? username[0].toUpperCase()
+                                    : 'O',
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -285,7 +248,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                                   Text(
                                     'Welcome back,',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.85),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -305,7 +270,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                                   Text(
                                     '@$username',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -326,7 +293,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                                   Text(
                                     'Contact Phone',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       fontSize: 11,
                                     ),
                                   ),
@@ -352,7 +321,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                                   Text(
                                     'Affiliated Org',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       fontSize: 11,
                                     ),
                                   ),
@@ -412,7 +383,8 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => StaffScanQrScreen(staffUserData: _userData),
+                              builder: (_) =>
+                                  StaffScanQrScreen(staffUserData: _userData),
                             ),
                           );
                         },
@@ -427,7 +399,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => StaffDonorHistoryScreen(staffUserData: _userData),
+                              builder: (_) => StaffDonorHistoryScreen(
+                                staffUserData: _userData,
+                              ),
                             ),
                           );
                         },
@@ -442,7 +416,8 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => StaffReportsScreen(staffUserData: _userData),
+                              builder: (_) =>
+                                  StaffReportsScreen(staffUserData: _userData),
                             ),
                           );
                         },
@@ -457,7 +432,9 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => StaffConfirmedDonorsScreen(staffUserData: _userData),
+                              builder: (_) => StaffConfirmedDonorsScreen(
+                                staffUserData: _userData,
+                              ),
                             ),
                           );
                         },
@@ -476,12 +453,17 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                         foregroundColor: AppTheme.primaryCrimson,
                         side: const BorderSide(color: Color(0xFFFECACA)),
                         backgroundColor: const Color(0xFFFEF2F2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                       icon: const Icon(Icons.logout_rounded),
                       label: const Text(
                         'Log Out of Staff Portal',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                       onPressed: () => _handleLogout(context),
                     ),
@@ -512,7 +494,10 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
             SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryCrimson),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppTheme.primaryCrimson,
+              ),
             ),
             SizedBox(width: 12),
             Text(
@@ -535,7 +520,11 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 20),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Color(0xFFDC2626),
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -548,7 +537,8 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
       );
     }
 
-    final isOngoing = _ongoingCamp != null &&
+    final isOngoing =
+        _ongoingCamp != null &&
         _ongoingCamp!['status']?.toString().toLowerCase() == 'ongoing' &&
         (_ongoingCamp!['facility_id']?.toString().isNotEmpty ?? false);
 
@@ -570,7 +560,11 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                 color: const Color(0xFFFEF3C7),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.event_busy_rounded, color: Color(0xFFD97706), size: 22),
+              child: const Icon(
+                Icons.event_busy_rounded,
+                color: Color(0xFFD97706),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -588,7 +582,11 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'You currently have no ongoing blood donation camp assigned in assigned_staff_members. Active camps assigned to you by your Organization Administrator will appear here.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700, height: 1.3),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade700,
+                      height: 1.3,
+                    ),
                   ),
                 ],
               ),
@@ -654,7 +652,10 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF16A34A),
                     borderRadius: BorderRadius.circular(8),
@@ -692,7 +693,11 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.location_on_rounded, size: 16, color: AppTheme.primaryCrimson),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        size: 16,
+                        color: AppTheme.primaryCrimson,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -712,7 +717,11 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                   Row(
                     children: [
                       if (district.isNotEmpty) ...[
-                        const Icon(Icons.map_rounded, size: 15, color: Color(0xFF0284C7)),
+                        const Icon(
+                          Icons.map_rounded,
+                          size: 15,
+                          color: Color(0xFF0284C7),
+                        ),
                         const SizedBox(width: 5),
                         Text(
                           district,
@@ -726,10 +735,17 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                       if (district.isNotEmpty && startTime.isNotEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('•', style: TextStyle(color: Colors.grey)),
+                          child: Text(
+                            '•',
+                            style: TextStyle(color: Colors.grey),
+                          ),
                         ),
                       if (startTime.isNotEmpty) ...[
-                        const Icon(Icons.access_time_rounded, size: 15, color: Color(0xFFD97706)),
+                        const Icon(
+                          Icons.access_time_rounded,
+                          size: 15,
+                          color: Color(0xFFD97706),
+                        ),
                         const SizedBox(width: 5),
                         Text(
                           '$startTime - $endTime',
@@ -750,18 +766,29 @@ class _OrgStaffDashboardScreenState extends State<OrgStaffDashboardScreen> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFB71C1C),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: Colors.white),
+                    icon: const Icon(
+                      Icons.qr_code_scanner_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
                     label: const Text(
                       'Scan Donors for this Camp',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: Colors.white,
+                      ),
                     ),
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => StaffScanQrScreen(staffUserData: _userData),
+                          builder: (_) =>
+                              StaffScanQrScreen(staffUserData: _userData),
                         ),
                       );
                     },

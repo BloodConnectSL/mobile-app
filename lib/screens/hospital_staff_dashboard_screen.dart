@@ -1,8 +1,11 @@
+import '../widgets/prana_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/session_service.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-import 'donor_profile_screen.dart';
+import 'account_screen.dart';
+import 'notifications_screen.dart';
 import 'login_screen.dart';
 import 'staff_confirmed_donors_screen.dart';
 import 'staff_donor_history_screen.dart';
@@ -12,37 +15,53 @@ import 'staff_scan_qr_screen.dart';
 class HospitalStaffDashboardScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const HospitalStaffDashboardScreen({
-    super.key,
-    required this.userData,
-  });
+  const HospitalStaffDashboardScreen({super.key, required this.userData});
 
   @override
-  State<HospitalStaffDashboardScreen> createState() => _HospitalStaffDashboardScreenState();
+  State<HospitalStaffDashboardScreen> createState() =>
+      _HospitalStaffDashboardScreenState();
 }
 
-class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScreen> {
+class _HospitalStaffDashboardScreenState
+    extends State<HospitalStaffDashboardScreen> {
   late Map<String, dynamic> _userData;
+  Map<String, dynamic> _report = {};
+  String _facilityName = 'Loading facility…';
+  Future<void> _loadReport() async {
+    try {
+      final result = await Future.wait([
+        ApiService.getStaffReports(),
+        ApiService.getActiveStaffDuty(
+          staffUserId:
+              widget.userData['user_id']?.toString() ??
+              widget.userData['id']?.toString() ??
+              '',
+          staffRole: 'HOSPITAL_STAFF',
+        ),
+      ]);
+      if (mounted) {
+        setState(() {
+          _report = result[0];
+          _facilityName =
+              result[1]['facility_name']?.toString() ?? 'Facility unavailable';
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _facilityName = 'Facility unavailable');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _userData = Map<String, dynamic>.from(widget.userData);
+    _loadReport();
   }
 
   Future<void> _openProfile(BuildContext context) async {
-    final updated = await Navigator.of(context).push<Map<String, dynamic>>(
-      MaterialPageRoute(
-        builder: (_) => DonorProfileScreen(userData: _userData),
-      ),
-    );
-
-    if (updated != null && mounted) {
-      setState(() {
-        _userData = Map<String, dynamic>.from(updated);
-      });
-      SessionService.updateUserData(_userData);
-    }
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
   }
 
   void _handleLogout(BuildContext context) {
@@ -56,8 +75,22 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
             Text('Confirm Logout'),
           ],
         ),
-        content: const Text('Are you sure you want to log out of the Hospital Staff Portal?'),
+        content: const Text(
+          'Are you sure you want to log out of the Hospital Staff Portal?',
+        ),
         actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadReport,
+          ),
+          IconButton(
+            tooltip: 'Notifications',
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            ),
+          ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancel'),
@@ -92,7 +125,7 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
         ? '$firstName $lastName'.trim()
         : username;
     final phone = userData['phone'] ?? '';
-    final facilityName = userData['hospital_name'] ?? 'Colombo National Hospital';
+    final facilityName = _facilityName;
 
     return PopScope(
       canPop: false,
@@ -104,69 +137,15 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
         backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
           titleSpacing: 16,
-          title: Row(
+          title: const Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFB71C1C), Color(0xFFE53935)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryCrimson.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+              PranaLogo(size: 36),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Prana · Hospital staff',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                 ),
-                child: const Icon(
-                  Icons.local_hospital_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Blood',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.primaryCrimson,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const Text(
-                        'Connect',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Text(
-                    'Hospital Staff Portal',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -174,12 +153,19 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
           actions: [
             IconButton(
               tooltip: 'My Profile',
-              icon: const Icon(Icons.account_circle_outlined, color: AppTheme.primaryCrimson, size: 28),
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                color: AppTheme.primaryCrimson,
+                size: 28,
+              ),
               onPressed: () => _openProfile(context),
             ),
             IconButton(
               tooltip: 'Log Out',
-              icon: const Icon(Icons.logout_rounded, color: AppTheme.primaryCrimson),
+              icon: const Icon(
+                Icons.logout_rounded,
+                color: AppTheme.primaryCrimson,
+              ),
               onPressed: () => _handleLogout(context),
             ),
           ],
@@ -218,7 +204,9 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                             radius: 26,
                             backgroundColor: Colors.white,
                             child: Text(
-                              username.isNotEmpty ? username[0].toUpperCase() : 'H',
+                              username.isNotEmpty
+                                  ? username[0].toUpperCase()
+                                  : 'H',
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -349,7 +337,8 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => StaffScanQrScreen(staffUserData: _userData),
+                            builder: (_) =>
+                                StaffScanQrScreen(staffUserData: _userData),
                           ),
                         );
                       },
@@ -364,7 +353,9 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => StaffDonorHistoryScreen(staffUserData: _userData),
+                            builder: (_) => StaffDonorHistoryScreen(
+                              staffUserData: _userData,
+                            ),
                           ),
                         );
                       },
@@ -379,7 +370,8 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => StaffReportsScreen(staffUserData: _userData),
+                            builder: (_) =>
+                                StaffReportsScreen(staffUserData: _userData),
                           ),
                         );
                       },
@@ -394,7 +386,9 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => StaffConfirmedDonorsScreen(staffUserData: _userData),
+                            builder: (_) => StaffConfirmedDonorsScreen(
+                              staffUserData: _userData,
+                            ),
                           ),
                         );
                       },
@@ -427,23 +421,37 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.thermostat_rounded, color: AppTheme.primaryCrimson, size: 20),
+                              Icon(
+                                Icons.thermostat_rounded,
+                                color: AppTheme.primaryCrimson,
+                                size: 20,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'Blood Bank Cold Chain',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFDCFCE7),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Row(
                               children: [
-                                Icon(Icons.check_circle, size: 12, color: Color(0xFF15803D)),
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 12,
+                                  color: Color(0xFF15803D),
+                                ),
                                 SizedBox(width: 4),
                                 Text(
                                   '3.8°C OPTIMAL',
@@ -461,16 +469,41 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                       const SizedBox(height: 6),
                       const Text(
                         'Main Hospital Blood Storage Unit #1 (2°C - 6°C Range)',
-                        style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                       const Divider(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildMiniStat(label: 'Pending Tests', value: '4', color: const Color(0xFFDC2626)),
-                          _buildMiniStat(label: 'In Lab', value: '7', color: const Color(0xFFD97706)),
-                          _buildMiniStat(label: 'Ready to Issue', value: '18', color: const Color(0xFF059669)),
-                          _buildMiniStat(label: 'Issued Today', value: '26', color: const Color(0xFF0284C7)),
+                          _buildMiniStat(
+                            label: 'Donations',
+                            value:
+                                _report['total_units_collected']?.toString() ??
+                                '—',
+                            color: const Color(0xFFDC2626),
+                          ),
+                          _buildMiniStat(
+                            label: 'Today',
+                            value:
+                                _report['today_units_collected']?.toString() ??
+                                '—',
+                            color: const Color(0xFFD97706),
+                          ),
+                          _buildMiniStat(
+                            label: 'This month',
+                            value:
+                                _report['month_units_collected']?.toString() ??
+                                '—',
+                            color: const Color(0xFF059669),
+                          ),
+                          _buildMiniStat(
+                            label: 'Donors',
+                            value: _report['total_donors']?.toString() ?? '—',
+                            color: const Color(0xFF0284C7),
+                          ),
                         ],
                       ),
                     ],
@@ -488,12 +521,17 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
                       foregroundColor: AppTheme.primaryCrimson,
                       side: const BorderSide(color: Color(0xFFFECACA)),
                       backgroundColor: const Color(0xFFFEF2F2),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     icon: const Icon(Icons.logout_rounded),
                     label: const Text(
                       'Log Out of Staff Portal',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                     onPressed: () => _handleLogout(context),
                   ),
@@ -580,7 +618,11 @@ class _HospitalStaffDashboardScreenState extends State<HospitalStaffDashboardScr
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
